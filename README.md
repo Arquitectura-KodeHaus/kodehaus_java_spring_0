@@ -51,7 +51,7 @@ Antes de iniciar el desarrollo, cada persona del equipo debe contar con:
 
 1. Instala las dependencias (solo la primera vez):
    ```bash
-   cd stocks-backend
+   cd bknd
    ./mvnw dependency:go-offline
    ```
 2. Ejecuta la aplicación apuntando al entorno configurado:
@@ -69,7 +69,7 @@ El backend expone la API REST para gestionar stocks y un endpoint `/health` que 
 
 1. Instala dependencias:
    ```bash
-   cd stocks-frontend
+   cd frnt
    npm install
    ```
 2. Ajusta el archivo `src/environments/environment.ts` si necesitas apuntar a otro backend (por defecto usa `http://localhost:8080`).
@@ -95,8 +95,8 @@ El backend expone la API REST para gestionar stocks y un endpoint `/health` que 
 
 Cuando los cambios se fusionan en `main`:
 
-- `stocks-backend/` se despliega automáticamente a Cloud Run.
-- `stocks-frontend/` se publica en Cloud Storage.
+- `bknd/` se despliega automáticamente a Cloud Run.
+- `frnt/` se publica en Cloud Storage.
 
 Cada despliegue usa el endpoint `/health` para validar la aplicación antes de exponerla.
 
