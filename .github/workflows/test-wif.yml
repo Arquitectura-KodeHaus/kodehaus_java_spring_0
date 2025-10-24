@@ -1,0 +1,27 @@
+name: test-wif
+on:
+  workflow_dispatch: {}
+
+jobs:
+  auth:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Auth to GCP (WIF)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_SA_EMAIL }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Verify identity and project
+        run: |
+          gcloud auth list
+          gcloud config set project "${{ vars.GCP_PROJECT_ID }}"
+          gcloud projects describe "${{ vars.GCP_PROJECT_ID }}" --format='value(projectNumber)'
+          gcloud artifacts repositories list --location "${{ vars.GCP_REGION }}"

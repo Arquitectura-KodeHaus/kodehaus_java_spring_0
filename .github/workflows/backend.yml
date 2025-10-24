@@ -1,0 +1,82 @@
+name: Backend CI/CD - GCP
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'stocks-backend/**'
+      - '.github/workflows/backend.yml'
+
+env:
+  PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+  REGION: ${{ vars.GCP_REGION }}
+  AR_REPO: ${{ vars.ARTIFACT_REGISTRY_REPO || 'stocks-backend' }}
+  SERVICE: stocks-backend-service
+  IMAGE_NAME: stocks-backend
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    defaults:
+      run:
+        shell: bash
+        working-directory: stocks-backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Auth to GCP (WIF)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_SA_EMAIL }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker to Artifact Registry
+        # puede correr desde cualquier carpeta
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+        working-directory: .
+
+      - name: Give execute permissions to mvnw
+        run: chmod +x mvnw
+
+      - name: Build jar (optional)
+        run: |
+          if [ -f mvnw ]; then ./mvnw -B -DskipTests package; fi
+
+      - name: Build & Push image
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          IMAGE_URI="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/${{ env.IMAGE_NAME }}:${IMAGE_TAG}"
+          docker build -t "$IMAGE_URI" .
+          docker push "$IMAGE_URI"
+          DIGEST=$(gcloud artifacts docker images describe "$IMAGE_URI" --format='value(image_summary.digest)')
+          echo "IMAGE_URI_DIGEST=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/${{ env.IMAGE_NAME }}@${DIGEST}" >> $GITHUB_ENV
+
+      - name: Deploy to Cloud Run
+        working-directory: .
+        run: |
+          gcloud run deploy "${{ env.SERVICE }}" \
+          --region "${{ env.REGION }}" \
+          --image "${IMAGE_URI_DIGEST}" \
+          --platform managed \
+          --allow-unauthenticated \
+          --service-account "run-backend-sa@${{ env.PROJECT_ID }}.iam.gserviceaccount.com" \
+          --add-cloudsql-instances "kodehaus-prod-474304:us-central1:pg-prod" \
+          --memory 1Gi \
+          --cpu 1 \
+          --max-instances 10 \
+          --timeout 300 \
+          --set-env-vars "SPRING_PROFILES_ACTIVE=prod" \
+          --set-secrets "SPRING_DATASOURCE_URL=DB_URL:latest,SPRING_DATASOURCE_USERNAME=DB_USERNAME:latest,SPRING_DATASOURCE_PASSWORD=DB_PASSWORD:latest"
