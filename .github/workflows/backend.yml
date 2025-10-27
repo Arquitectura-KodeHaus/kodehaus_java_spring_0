@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'stocks-backend/**'
+      - 'bknd/**'
       - '.github/workflows/backend.yml'
 
 env:
