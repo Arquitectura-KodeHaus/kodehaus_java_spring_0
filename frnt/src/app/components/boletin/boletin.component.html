@@ -1,0 +1,33 @@
+<div class="page-container">
+  <div class="page-header">
+    <h2>🧾 Boletín de Precios</h2>
+    <p class="subtitle">Precios actualizados de productos del día</p>
+  </div>
+
+  <div class="content-card" *ngIf="boletin.length > 0; else noData">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Producto</th>
+          <th>Precio</th>
+          <th>Unidad</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of boletin">
+          <td>{{ item.producto }}</td>
+          <td><strong>{{ item.precio | currency:'COP':'symbol-narrow':'1.0-0' }}</strong></td>
+          <td><span class="badge">{{ item.unidad }}</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <ng-template #noData>
+    <div class="empty-state">
+      <div class="empty-icon">📋</div>
+      <h3>No hay boletín disponible</h3>
+      <p>No se han registrado precios para hoy</p>
+    </div>
+  </ng-template>
+</div>

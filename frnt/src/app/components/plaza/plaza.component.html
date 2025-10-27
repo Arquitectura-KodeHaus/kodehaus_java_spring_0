@@ -1,0 +1,70 @@
+<div class="page-container">
+  <div class="page-header">
+    <h2>🏬 Plazas Registradas</h2>
+    <p class="subtitle">Gestión de plazas de mercado</p>
+    <span *ngIf="!canEdit" class="role-badge readonly">Solo lectura</span>
+  </div>
+
+  <div class="two-columns">
+    <div class="content-card" *ngIf="plazas.length > 0; else noData">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Dirección</th>
+            <th>Contacto</th>
+            <th>Horario</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let plaza of plazas">
+            <td>{{ plaza.nombre }}</td>
+            <td>{{ plaza.direccion }}</td>
+            <td>{{ plaza.contacto }}</td>
+            <td>{{ plaza.horario }}</td>
+            <td>
+              <button class="btn" (click)="select(plaza)" [disabled]="!canEdit">Editar</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="form-card">
+      <h3>{{ form.value.id ? 'Editar Plaza' : 'Crear Plaza' }}</h3>
+      <form [formGroup]="form" (ngSubmit)="save()">
+        <div class="form-grid">
+          <label>
+            <span>Nombre</span>
+            <input type="text" formControlName="nombre" placeholder="Ej. Plaza Central" />
+          </label>
+          <label>
+            <span>Dirección</span>
+            <input type="text" formControlName="direccion" placeholder="Calle 1 # 2-34" />
+          </label>
+          <label>
+            <span>Contacto</span>
+            <input type="text" formControlName="contacto" placeholder="Ej. 3001234567" />
+          </label>
+          <label>
+            <span>Horario</span>
+            <input type="text" formControlName="horario" placeholder="Lun-Dom 6am - 6pm" />
+          </label>
+        </div>
+        <div class="form-actions">
+          <button class="btn primary" type="submit" [disabled]="form.invalid || !canEdit">Guardar</button>
+          <button class="btn" type="button" (click)="startEdit()" [disabled]="!canEdit">Nuevo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <ng-template #noData>
+    <div class="empty-state">
+      <div class="empty-icon">📦</div>
+      <h3>No hay plazas disponibles</h3>
+      <p>Aún no se han registrado plazas en el sistema</p>
+    </div>
+  </ng-template>
+</div>

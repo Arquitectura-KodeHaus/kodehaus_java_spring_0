@@ -1,0 +1,34 @@
+<div class="page-container">
+  <div class="page-header">
+    <h2>🚗 Control de Parqueadero</h2>
+    <p class="subtitle">Registro de vehículos y tarifas</p>
+  </div>
+
+  <div class="content-card" *ngIf="parqueadero.length > 0; else noData">
+    <table class="data-table">
+    <thead>
+      <tr>
+        <th>Placa</th>
+        <th>Hora Entrada</th>
+        <th>Hora Salida</th>
+        <th>Tarifa</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let v of parqueadero">
+        <td><span class="badge-placa">{{ v.placa }}</span></td>
+        <td>{{ v.entrada }}</td>
+        <td>{{ v.salida }}</td>
+        <td><strong>{{ v.tarifa | currency:'COP':'symbol-narrow':'1.0-0' }}</strong></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+  <ng-template #noData>
+    <div class="empty-state">
+      <div class="empty-icon">🚙</div>
+      <h3>No hay vehículos registrados</h3>
+      <p>No hay vehículos en el parqueadero actualmente</p>
+    </div>
+  </ng-template>

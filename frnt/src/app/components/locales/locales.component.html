@@ -1,0 +1,35 @@
+<div class="page-container">
+  <div class="page-header">
+    <h2>🛍️ Locales Comerciales</h2>
+    <p class="subtitle">Directorio de locales registrados en la plaza</p>
+  </div>
+
+  <div class="content-card" *ngIf="locales.length > 0; else noData">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Propietario</th>
+          <th>Ventas Mensuales</th>
+          <th>Empleados</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let local of locales">
+          <td><strong>{{ local.nombre }}</strong></td>
+          <td>{{ local.propietario }}</td>
+          <td>{{ local.ventas | currency:'COP':'symbol-narrow':'1.0-0' }}</td>
+          <td><span class="badge-employee">{{ local.empleados }}</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <ng-template #noData>
+    <div class="empty-state">
+      <div class="empty-icon">🏪</div>
+      <h3>No hay locales registrados</h3>
+      <p>Aún no se han registrado locales comerciales</p>
+    </div>
+  </ng-template>
+</div>
