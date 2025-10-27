@@ -11,7 +11,7 @@ env:
   PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
   REGION: ${{ vars.GCP_REGION }}
   AR_REPO: ${{ vars.ARTIFACT_REGISTRY_REPO || 'stocks-backend' }}
-  SERVICE: stocks-frontend-service
+  SERVICE: frontend-service-java-2
   IMAGE_NAME: stocks-frontend
 
 jobs:
