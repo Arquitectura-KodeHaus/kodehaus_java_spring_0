@@ -1,16 +1,6 @@
 <div class="app-container">
-  <nav class="navbar">
-    <div class="nav-brand">
-      <h1>🏬 KodeHaus Plaza</h1>
-    </div>
-    <div class="nav-links">
-      <a routerLink="/plaza" routerLinkActive="active">Plaza</a>
-      <a routerLink="/boletin" routerLinkActive="active">Boletín</a>
-      <a routerLink="/locales" routerLinkActive="active">Locales</a>
-      <a routerLink="/pagos" routerLinkActive="active">Pagos</a>
-      <a routerLink="/parqueadero" routerLinkActive="active">Parqueadero</a>
-    </div>
-  </nav>
+  <!-- Header con información del usuario y logout -->
+  <app-header *ngIf="authService.isLoggedIn()"></app-header>
 
   <main class="main-content">
     <router-outlet></router-outlet>

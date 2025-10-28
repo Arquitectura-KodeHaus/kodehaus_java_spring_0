@@ -1,0 +1,42 @@
+<header class="header">
+  <div class="header-container">
+    <!-- Logo y título -->
+    <div class="header-left">
+      <h1 class="logo">
+        <a routerLink="/plaza" routerLinkActive="active">PlazApp</a>
+      </h1>
+    </div>
+
+    <!-- Navegación -->
+    <nav class="header-nav" *ngIf="user">
+      <a routerLink="/plaza" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}">
+        Plaza
+      </a>
+      <a routerLink="/boletin" routerLinkActive="active">Boletín</a>
+      <a routerLink="/locales" routerLinkActive="active">Locales</a>
+      <a routerLink="/pagos" routerLinkActive="active">Pagos</a>
+      <a routerLink="/parqueadero" routerLinkActive="active">Parqueadero</a>
+    </nav>
+
+    <!-- Información del usuario y logout -->
+    <div class="header-right" *ngIf="user">
+      <div class="user-info">
+        <div class="user-name">
+          <span class="welcome-text">Bienvenido,</span>
+          <span class="username">{{ user.fullName }}</span>
+          <span class="user-role" *ngIf="user.roles.length > 0">
+            ({{ user.roles.join(', ') }})
+          </span>
+        </div>
+        <div class="plaza-info" *ngIf="user.plazaName">
+          <span class="plaza-name">{{ user.plazaName }}</span>
+        </div>
+      </div>
+
+      <button class="logout-btn" (click)="logout()">
+        Cerrar Sesión
+      </button>
+    </div>
+  </div>
+</header>
+
