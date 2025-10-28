@@ -23,7 +23,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: stocks-backend
+        working-directory: bknd  
 
     steps:
       - uses: actions/checkout@v4
@@ -43,24 +43,28 @@ jobs:
       - uses: google-github-actions/setup-gcloud@v2
 
       - name: Configure Docker to Artifact Registry
-        # puede correr desde cualquier carpeta
         run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
         working-directory: .
 
       - name: Give execute permissions to mvnw
         run: chmod +x mvnw
 
-      - name: Build jar (optional)
-        run: |
-          if [ -f mvnw ]; then ./mvnw -B -DskipTests package; fi
+      - name: Build jar with Maven
+        run: ./mvnw clean package -DskipTests
 
-      - name: Build & Push image
+      - name: Build & Push Docker image
         env:
           IMAGE_TAG: ${{ github.sha }}
         run: |
           IMAGE_URI="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/${{ env.IMAGE_NAME }}:${IMAGE_TAG}"
+          
+          echo "🔨 Building Docker image..."
           docker build -t "$IMAGE_URI" .
+          
+          echo "📦 Pushing image..."
           docker push "$IMAGE_URI"
+          
+          # Obtener digest para deploy inmutable
           DIGEST=$(gcloud artifacts docker images describe "$IMAGE_URI" --format='value(image_summary.digest)')
           echo "IMAGE_URI_DIGEST=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/${{ env.IMAGE_NAME }}@${DIGEST}" >> $GITHUB_ENV
 
@@ -68,15 +72,55 @@ jobs:
         working-directory: .
         run: |
           gcloud run deploy "${{ env.SERVICE }}" \
-          --region "${{ env.REGION }}" \
-          --image "${IMAGE_URI_DIGEST}" \
-          --platform managed \
-          --allow-unauthenticated \
-          --service-account "run-backend-sa@${{ env.PROJECT_ID }}.iam.gserviceaccount.com" \
-          --add-cloudsql-instances "kodehaus-prod-474304:us-central1:pg-prod" \
-          --memory 1Gi \
-          --cpu 1 \
-          --max-instances 10 \
-          --timeout 300 \
-          --set-env-vars "SPRING_PROFILES_ACTIVE=prod" \
-          --set-secrets "SPRING_DATASOURCE_URL=DB_URL:latest,SPRING_DATASOURCE_USERNAME=DB_USERNAME:latest,SPRING_DATASOURCE_PASSWORD=DB_PASSWORD:latest"
+            --region "${{ env.REGION }}" \
+            --image "${IMAGE_URI_DIGEST}" \
+            --platform managed \
+            --allow-unauthenticated \
+            --service-account "run-backend-sa@${{ env.PROJECT_ID }}.iam.gserviceaccount.com" \
+            --add-cloudsql-instances "kodehaus-prod-474304:us-central1:pg-prod" \
+            --memory 1Gi \
+            --cpu 1 \
+            --min-instances 0 \
+            --max-instances 10 \
+            --timeout 300 \
+            --set-env-vars "SPRING_PROFILES_ACTIVE=prod" \
+            --set-secrets "SPRING_DATASOURCE_URL=DB_URL:latest,SPRING_DATASOURCE_USERNAME=DB_USERNAME:latest,SPRING_DATASOURCE_PASSWORD=DB_PASSWORD:latest"
+
+      - name: Verify deployment
+        working-directory: .
+        run: |
+          SERVICE_URL=$(gcloud run services describe "${{ env.SERVICE }}" \
+            --region "${{ env.REGION }}" \
+            --format='value(status.url)')
+          
+          echo "🌐 Backend URL: ${SERVICE_URL}"
+          
+          # Esperar que el servicio esté listo
+          sleep 15
+          
+          # Health check (ajusta el endpoint según tu API)
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${SERVICE_URL}/actuator/health" || echo "000")
+          
+          if [ "$HTTP_CODE" -eq 200 ]; then
+            echo "✅ Backend health check passed!"
+          else
+            echo "⚠️ Health check returned HTTP ${HTTP_CODE}"
+            echo "Service might still be starting up..."
+          fi
+
+      - name: Display deployment info
+        working-directory: .
+        run: |
+          SERVICE_URL=$(gcloud run services describe "${{ env.SERVICE }}" \
+            --region "${{ env.REGION }}" \
+            --format='value(status.url)')
+          
+          echo ""
+          echo "🎉 =================================="
+          echo "   Backend Deployed Successfully!"
+          echo "   =================================="
+          echo ""
+          echo "🌐 Backend URL: ${SERVICE_URL}"
+          echo "📦 Image: ${IMAGE_URI_DIGEST}"
+          echo "🗄️ Database: kodehaus-prod-474304:us-central1:pg-prod"
+          echo ""
