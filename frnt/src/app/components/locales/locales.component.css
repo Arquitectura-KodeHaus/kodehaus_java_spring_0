@@ -1,8 +1,129 @@
-.badge-employee {
-	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-	color: white;
-	padding: 0.25rem 0.75rem;
-	border-radius: 12px;
-	font-size: 0.875rem;
-	font-weight: 600;
+.locales-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 1.5rem;
+}
+
+.local-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  padding: 1.5rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.local-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #f7fafc;
+}
+
+.card-header h3 {
+  margin: 0;
+  color: #2d3748;
+  font-size: 1.25rem;
+}
+
+.owner-badge {
+  background: #edf2f7;
+  color: #4a5568;
+  padding: 0.25rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.metric .label {
+  font-size: 0.75rem;
+  color: #718096;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.metric .value {
+  font-size: 1rem;
+  color: #2d3748;
+  font-weight: 700;
+}
+
+.section {
+  margin-top: 1rem;
+}
+
+.section h4 {
+  font-size: 0.875rem;
+  color: #4a5568;
+  margin: 0 0 0.75rem 0;
+  font-weight: 600;
+}
+
+.empleados-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.empleado-badge {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e42 40%, #34d399 100%);
+  color: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.emp-nombre {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.emp-rol {
+  font-size: 0.75rem;
+  opacity: 0.9;
+}
+
+.inventario-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.inventario-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem;
+  background: #f7fafc;
+  border-radius: 6px;
+}
+
+.inventario-item .producto {
+  font-weight: 500;
+  color: #2d3748;
+}
+
+.inventario-item .stock {
+  color: #718096;
+  font-size: 0.875rem;
 }

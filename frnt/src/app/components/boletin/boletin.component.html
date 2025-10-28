@@ -2,6 +2,7 @@
   <div class="page-header">
     <h2>🧾 Boletín de Precios</h2>
     <p class="subtitle">Precios actualizados de productos del día</p>
+    <span class="date-badge" *ngIf="boletin.length > 0">{{ boletin[0].fecha }}</span>
   </div>
 
   <div class="content-card" *ngIf="boletin.length > 0; else noData">
@@ -11,6 +12,7 @@
           <th>Producto</th>
           <th>Precio</th>
           <th>Unidad</th>
+          <th>Fecha</th>
         </tr>
       </thead>
       <tbody>
@@ -18,6 +20,7 @@
           <td>{{ item.producto }}</td>
           <td><strong>{{ item.precio | currency:'COP':'symbol-narrow':'1.0-0' }}</strong></td>
           <td><span class="badge">{{ item.unidad }}</span></td>
+          <td>{{ item.fecha }}</td>
         </tr>
       </tbody>
     </table>

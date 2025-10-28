@@ -4,25 +4,48 @@
     <p class="subtitle">Directorio de locales registrados en la plaza</p>
   </div>
 
-  <div class="content-card" *ngIf="locales.length > 0; else noData">
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>Nombre</th>
-          <th>Propietario</th>
-          <th>Ventas Mensuales</th>
-          <th>Empleados</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let local of locales">
-          <td><strong>{{ local.nombre }}</strong></td>
-          <td>{{ local.propietario }}</td>
-          <td>{{ local.ventas | currency:'COP':'symbol-narrow':'1.0-0' }}</td>
-          <td><span class="badge-employee">{{ local.empleados }}</span></td>
-        </tr>
-      </tbody>
-    </table>
+  <div *ngIf="locales.length > 0; else noData" class="locales-grid">
+    <div class="local-card" *ngFor="let local of locales">
+      <div class="card-header">
+        <h3>{{ local.nombre }}</h3>
+        <span class="owner-badge">{{ local.propietario }}</span>
+      </div>
+      
+      <div class="metrics">
+        <div class="metric">
+          <span class="label">Ventas del día</span>
+          <span class="value">{{ local.ventasDia | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+        </div>
+        <div class="metric">
+          <span class="label">Ventas del mes</span>
+          <span class="value">{{ local.ventasMes | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+        </div>
+        <div class="metric">
+          <span class="label">Última venta</span>
+          <span class="value">{{ local.ultimaVenta }}</span>
+        </div>
+      </div>
+
+      <div class="section">
+        <h4>👥 Empleados</h4>
+        <div class="empleados-list">
+          <div class="empleado-badge" *ngFor="let emp of local.empleados">
+            <span class="emp-nombre">{{ emp.nombre }}</span>
+            <span class="emp-rol">{{ emp.rol }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h4>📦 Inventario</h4>
+        <div class="inventario-list">
+          <div class="inventario-item" *ngFor="let item of local.inventario">
+            <span class="producto">{{ item.producto }}</span>
+            <span class="stock">Stock: {{ item.stock }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <ng-template #noData>

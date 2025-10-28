@@ -8,7 +8,9 @@
     <table class="data-table">
     <thead>
       <tr>
+        <th>Referencia</th>
         <th>Concepto</th>
+        <th>Tipo</th>
         <th>Monto</th>
         <th>Fecha</th>
         <th>Estado</th>
@@ -16,7 +18,9 @@
     </thead>
     <tbody>
       <tr *ngFor="let pago of pagos">
+        <td><code class="ref-code">{{ pago.referencia }}</code></td>
         <td>{{ pago.concepto }}</td>
+        <td><span class="badge-tipo">{{ pago.tipo }}</span></td>
         <td><strong>{{ pago.monto | currency:'COP':'symbol-narrow':'1.0-0' }}</strong></td>
         <td>{{ pago.fecha }}</td>
         <td><span [ngClass]="pago.estado === 'Pagado' ? 'badge-success' : 'badge-warning'">{{ pago.estado }}</span></td>

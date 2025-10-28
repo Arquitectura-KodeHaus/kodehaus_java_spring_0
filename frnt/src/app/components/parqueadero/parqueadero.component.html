@@ -4,6 +4,25 @@
     <p class="subtitle">Registro de vehículos y tarifas</p>
   </div>
 
+  <div class="stats-grid" *ngIf="cuposTotales > 0">
+    <div class="stat-card">
+      <div class="stat-value">{{ cuposTotales }}</div>
+      <div class="stat-label">Cupos Totales</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">{{ ocupados }}</div>
+      <div class="stat-label">Ocupados</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">{{ cuposTotales - ocupados }}</div>
+      <div class="stat-label">Disponibles</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">{{ ocupacion | number:'1.0-0' }}%</div>
+      <div class="stat-label">Ocupación</div>
+    </div>
+  </div>
+
   <div class="content-card" *ngIf="parqueadero.length > 0; else noData">
     <table class="data-table">
     <thead>
@@ -32,3 +51,4 @@
       <p>No hay vehículos en el parqueadero actualmente</p>
     </div>
   </ng-template>
+</div>
