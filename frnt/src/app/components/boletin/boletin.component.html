@@ -1,33 +1,158 @@
 <div class="page-container">
   <div class="page-header">
-    <h2>🧾 Boletín de Precios</h2>
-    <p class="subtitle">Precios actualizados de productos del día</p>
+    <h2>📰 Boletín de Precios</h2>
+    <p class="subtitle">Gestiona los boletines de precios diarios</p>
+    <button 
+      *ngIf="canCreateBulletin" 
+      class="btn btn-primary" 
+      (click)="toggleCreateForm()"
+      [disabled]="showCreateForm && !isEditing">
+      {{ showCreateForm && !isEditing ? 'Cancelar' : '+ Nuevo Boletín' }}
+    </button>
+    <div *ngIf="!canCreateBulletin" class="permission-notice">
+      <p>ℹ️ Solo el administrador de la plaza puede crear y gestionar boletines</p>
+    </div>
   </div>
 
-  <div class="content-card" *ngIf="boletin.length > 0; else noData">
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>Producto</th>
-          <th>Precio</th>
-          <th>Unidad</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let item of boletin">
-          <td>{{ item.producto }}</td>
-          <td><strong>{{ item.precio | currency:'COP':'symbol-narrow':'1.0-0' }}</strong></td>
-          <td><span class="badge">{{ item.unidad }}</span></td>
-        </tr>
-      </tbody>
-    </table>
+  <!-- Formulario de creación/edición -->
+  <div class="content-card" *ngIf="showCreateForm">
+    <h3>{{ isEditing ? 'Editar Boletín' : 'Crear Nuevo Boletín' }}</h3>
+    
+    <form [formGroup]="bulletinForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="title">Título del Boletín</label>
+        <input 
+          type="text" 
+          id="title" 
+          formControlName="title" 
+          class="form-control"
+          [class.error]="hasError('title')"
+          placeholder="Ej: Precios del día - 15 de Enero">
+        <div class="error-message" *ngIf="hasError('title')">
+          {{ getErrorMessage('title') }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="publicationDate">Fecha de Publicación</label>
+        <input 
+          type="date" 
+          id="publicationDate" 
+          formControlName="publicationDate" 
+          class="form-control">
+      </div>
+
+      <div class="form-group">
+        <label for="file">Archivo Adjunto *</label>
+        <input 
+          type="file" 
+          id="file" 
+          (change)="onFileSelected($event)"
+          class="form-control"
+          [class.error]="hasError('file')"
+          required
+          accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.jpg,.jpeg,.png,.gif">
+        <small class="form-text text-muted">
+          Tipos permitidos: PDF, DOC, DOCX, XLS, XLSX, TXT, JPG, PNG, GIF (máximo 10MB)
+        </small>
+        <div class="error-message" *ngIf="hasError('file')">
+          {{ getErrorMessage('file') }}
+        </div>
+        
+        <div *ngIf="selectedFile" class="file-preview">
+          <div class="file-info">
+            <span class="file-icon">📎</span>
+            <div class="file-details">
+              <div class="file-name">{{ selectedFile.name }}</div>
+              <div class="file-size">{{ formatFileSize(selectedFile.size) }}</div>
+            </div>
+            <button type="button" class="btn btn-sm btn-danger" (click)="removeFile()">
+              ✕
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" [disabled]="bulletinForm.invalid">
+          {{ isEditing ? 'Actualizar Boletín' : 'Publicar Boletín' }}
+        </button>
+        <button type="button" class="btn btn-secondary" (click)="resetForm()">
+          Cancelar
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Lista de boletines -->
+  <div class="content-card" *ngIf="bulletins.length > 0; else noData">
+    <h3>Boletines del Día</h3>
+    
+    <div class="bulletin-list">
+      <div class="bulletin-item" *ngFor="let bulletin of bulletins">
+        <div class="bulletin-header">
+          <h4>{{ bulletin.title }}</h4>
+          <div class="bulletin-actions" *ngIf="canCreateBulletin">
+            <button class="btn btn-sm btn-outline" (click)="startEdit(bulletin)">
+              ✏️ Editar
+            </button>
+            <button class="btn btn-sm btn-danger" (click)="deleteBulletin(bulletin.id)">
+              🗑️ Eliminar
+            </button>
+          </div>
+        </div>
+        
+        <div class="bulletin-meta">
+          <span class="meta-item">
+            📅 {{ bulletin.publicationDate | date:'dd/MM/yyyy' }}
+          </span>
+          <span class="meta-item">
+            👤 {{ bulletin.createdByFullName }}
+          </span>
+          <span class="meta-item">
+            🏢 {{ bulletin.plazaName }}
+          </span>
+        </div>
+        
+        <div class="bulletin-content">
+          <pre>{{ bulletin.content }}</pre>
+        </div>
+        
+        <div *ngIf="bulletin.fileName" class="bulletin-attachment">
+          <div class="attachment-info">
+            <span class="attachment-icon">📎</span>
+            <div class="attachment-details">
+              <div class="attachment-name">{{ bulletin.fileName }}</div>
+              <div class="attachment-meta">
+                <span class="attachment-type">{{ bulletin.fileType?.toUpperCase() }}</span>
+                <span class="attachment-size" *ngIf="bulletin.fileSize">
+                  ({{ formatFileSize(bulletin.fileSize) }})
+                </span>
+              </div>
+            </div>
+            <button class="btn btn-sm btn-outline" (click)="downloadFile(bulletin)">
+              ⬇️ Descargar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <ng-template #noData>
     <div class="empty-state">
       <div class="empty-icon">📋</div>
-      <h3>No hay boletín disponible</h3>
-      <p>No se han registrado precios para hoy</p>
+      <h3>No hay boletines disponibles</h3>
+      <p>No se han publicado boletines para hoy</p>
+      <button 
+        *ngIf="canCreateBulletin" 
+        class="btn btn-primary" 
+        (click)="toggleCreateForm()">
+        Crear Primer Boletín
+      </button>
+      <div *ngIf="!canCreateBulletin" class="permission-notice">
+        <p>ℹ️ Contacta al administrador de la plaza para publicar boletines</p>
+      </div>
     </div>
   </ng-template>
 </div>

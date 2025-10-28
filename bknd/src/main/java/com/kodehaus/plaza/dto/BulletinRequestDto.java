@@ -12,15 +12,24 @@ public class BulletinRequestDto {
     private String content;
     private LocalDate publicationDate;
     private Long plazaId;
+    private String fileName;
+    private String filePath;
+    private String fileType;
+    private Long fileSize;
     
     // Constructors
     public BulletinRequestDto() {}
     
-    public BulletinRequestDto(String title, String content, LocalDate publicationDate, Long plazaId) {
+    public BulletinRequestDto(String title, String content, LocalDate publicationDate, Long plazaId,
+                            String fileName, String filePath, String fileType, Long fileSize) {
         this.title = title;
         this.content = content;
         this.publicationDate = publicationDate;
         this.plazaId = plazaId;
+        this.fileName = fileName;
+        this.filePath = filePath;
+        this.fileType = fileType;
+        this.fileSize = fileSize;
     }
     
     // Getters and Setters
@@ -35,4 +44,16 @@ public class BulletinRequestDto {
     
     public Long getPlazaId() { return plazaId; }
     public void setPlazaId(Long plazaId) { this.plazaId = plazaId; }
+    
+    public String getFileName() { return fileName; }
+    public void setFileName(String fileName) { this.fileName = fileName; }
+    
+    public String getFilePath() { return filePath; }
+    public void setFilePath(String filePath) { this.filePath = filePath; }
+    
+    public String getFileType() { return fileType; }
+    public void setFileType(String fileType) { this.fileType = fileType; }
+    
+    public Long getFileSize() { return fileSize; }
+    public void setFileSize(Long fileSize) { this.fileSize = fileSize; }
 }

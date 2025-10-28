@@ -4,6 +4,7 @@ import com.kodehaus.plaza.entity.*;
 import com.kodehaus.plaza.repository.*;
 // Lombok annotations removed for compatibility
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +17,7 @@ import java.util.Set;
  * Data initialization service for creating seed data
  */
 @Service
+@Order(1)
 public class DataInitializationService implements CommandLineRunner {
     
     private final PlazaRepository plazaRepository;
@@ -150,17 +152,29 @@ public class DataInitializationService implements CommandLineRunner {
     
     private void createPlaza() {
         if (plazaRepository.count() == 0) {
-            System.out.println("Creating plaza...");
+            System.out.println("Creating plazas...");
             
-            Plaza plaza = new Plaza();
-            plaza.setName("Centro Comercial Plaza Central");
-            plaza.setDescription("Modern shopping center in the heart of the city");
-            plaza.setAddress("Calle Principal 123, Ciudad Central");
-            plaza.setPhoneNumber("+1-555-0123");
-            plaza.setEmail("info@plazacentral.com");
-            plaza.setOpeningHours("09:00");
-            plaza.setClosingHours("22:00");
-            plazaRepository.save(plaza);
+            // First plaza
+            Plaza plaza1 = new Plaza();
+            plaza1.setName("Centro Comercial Plaza Central");
+            plaza1.setDescription("Modern shopping center in the heart of the city");
+            plaza1.setAddress("Calle Principal 123, Ciudad Central");
+            plaza1.setPhoneNumber("+1-555-0123");
+            plaza1.setEmail("info@plazacentral.com");
+            plaza1.setOpeningHours("09:00");
+            plaza1.setClosingHours("22:00");
+            plazaRepository.save(plaza1);
+            
+            // Second plaza
+            Plaza plaza2 = new Plaza();
+            plaza2.setName("Plaza Norte Shopping Mall");
+            plaza2.setDescription("Large shopping mall in the north of the city");
+            plaza2.setAddress("Avenida Norte 456, Ciudad Central");
+            plaza2.setPhoneNumber("+1-555-0124");
+            plaza2.setEmail("contacto@plazanorte.com");
+            plaza2.setOpeningHours("10:00");
+            plaza2.setClosingHours("21:00");
+            plazaRepository.save(plaza2);
         }
     }
     
@@ -168,25 +182,38 @@ public class DataInitializationService implements CommandLineRunner {
         if (userRepository.count() == 0) {
             System.out.println("Creating users...");
             
-            Plaza plaza = plazaRepository.findByName("Centro Comercial Plaza Central").orElse(null);
+            Plaza plaza1 = plazaRepository.findByName("Centro Comercial Plaza Central").orElse(null);
+            Plaza plaza2 = plazaRepository.findByName("Plaza Norte Shopping Mall").orElse(null);
             Role managerRole = roleRepository.findByName("MANAGER").orElse(null);
             Role securityRole = roleRepository.findByName("EMPLOYEE_SECURITY").orElse(null);
             Role parkingRole = roleRepository.findByName("EMPLOYEE_PARKING").orElse(null);
             Role generalRole = roleRepository.findByName("EMPLOYEE_GENERAL").orElse(null);
             
-            // Create manager
-            User manager = new User();
-            manager.setUsername("manager1");
-            manager.setEmail("manager@plazacentral.com");
-            manager.setPassword(passwordEncoder.encode("password123"));
-            manager.setFirstName("John");
-            manager.setLastName("Doe");
-            manager.setPhoneNumber("+1-555-0001");
-            manager.setPlaza(plaza);
-            manager.setRoles(Set.of(managerRole));
-            userRepository.save(manager);
+            // Create manager for Plaza 1
+            User manager1 = new User();
+            manager1.setUsername("manager1");
+            manager1.setEmail("manager@plazacentral.com");
+            manager1.setPassword(passwordEncoder.encode("password123"));
+            manager1.setFirstName("John");
+            manager1.setLastName("Doe");
+            manager1.setPhoneNumber("+1-555-0001");
+            manager1.setPlaza(plaza1);
+            manager1.setRoles(Set.of(managerRole));
+            userRepository.save(manager1);
             
-            // Create security employee
+            // Create manager for Plaza 2
+            User manager2 = new User();
+            manager2.setUsername("manager2");
+            manager2.setEmail("manager@plazanorte.com");
+            manager2.setPassword(passwordEncoder.encode("password123"));
+            manager2.setFirstName("Jane");
+            manager2.setLastName("Smith");
+            manager2.setPhoneNumber("+1-555-0002");
+            manager2.setPlaza(plaza2);
+            manager2.setRoles(Set.of(managerRole));
+            userRepository.save(manager2);
+            
+            // Create security employee for Plaza 1
             User security = new User();
             security.setUsername("security1");
             security.setEmail("security@plazacentral.com");
@@ -194,11 +221,11 @@ public class DataInitializationService implements CommandLineRunner {
             security.setFirstName("Jane");
             security.setLastName("Smith");
             security.setPhoneNumber("+1-555-0002");
-            security.setPlaza(plaza);
+            security.setPlaza(plaza1);
             security.setRoles(Set.of(securityRole));
             userRepository.save(security);
             
-            // Create parking employee
+            // Create parking employee for Plaza 1
             User parking = new User();
             parking.setUsername("parking1");
             parking.setEmail("parking@plazacentral.com");
@@ -206,11 +233,11 @@ public class DataInitializationService implements CommandLineRunner {
             parking.setFirstName("Mike");
             parking.setLastName("Johnson");
             parking.setPhoneNumber("+1-555-0003");
-            parking.setPlaza(plaza);
+            parking.setPlaza(plaza1);
             parking.setRoles(Set.of(parkingRole));
             userRepository.save(parking);
             
-            // Create general employee
+            // Create general employee for Plaza 1
             User general = new User();
             general.setUsername("employee1");
             general.setEmail("employee@plazacentral.com");
@@ -218,7 +245,7 @@ public class DataInitializationService implements CommandLineRunner {
             general.setFirstName("Sarah");
             general.setLastName("Wilson");
             general.setPhoneNumber("+1-555-0004");
-            general.setPlaza(plaza);
+            general.setPlaza(plaza1);
             general.setRoles(Set.of(generalRole));
             userRepository.save(general);
         }

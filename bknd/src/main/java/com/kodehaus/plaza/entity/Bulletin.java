@@ -24,9 +24,7 @@ public class Bulletin {
     @Column(nullable = false)
     private String title;
     
-    @NotBlank(message = "Content is required")
-    @Size(min = 10, max = 2000, message = "Content must be between 10 and 2000 characters")
-    @Column(columnDefinition = "TEXT", nullable = false)
+    @Column(columnDefinition = "TEXT")
     private String content;
     
     @Column(name = "publication_date", nullable = false)
@@ -40,6 +38,21 @@ public class Bulletin {
     
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+    
+    @Size(max = 255, message = "File name must not exceed 255 characters")
+    @Column(name = "file_name")
+    private String fileName;
+    
+    @Size(max = 500, message = "File path must not exceed 500 characters")
+    @Column(name = "file_path")
+    private String filePath;
+    
+    @Size(max = 50, message = "File type must not exceed 50 characters")
+    @Column(name = "file_type")
+    private String fileType;
+    
+    @Column(name = "file_size")
+    private Long fileSize;
     
     // Relationship with Plaza
     @ManyToOne(fetch = FetchType.LAZY)
@@ -55,7 +68,8 @@ public class Bulletin {
     public Bulletin() {}
     
     public Bulletin(Long id, String title, String content, LocalDate publicationDate, Boolean isActive,
-                   LocalDateTime createdAt, LocalDateTime updatedAt, Plaza plaza, User createdBy) {
+                   LocalDateTime createdAt, LocalDateTime updatedAt, String fileName, String filePath, 
+                   String fileType, Long fileSize, Plaza plaza, User createdBy) {
         this.id = id;
         this.title = title;
         this.content = content;
@@ -63,6 +77,10 @@ public class Bulletin {
         this.isActive = isActive;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.fileName = fileName;
+        this.filePath = filePath;
+        this.fileType = fileType;
+        this.fileSize = fileSize;
         this.plaza = plaza;
         this.createdBy = createdBy;
     }
@@ -108,4 +126,16 @@ public class Bulletin {
     
     public User getCreatedBy() { return createdBy; }
     public void setCreatedBy(User createdBy) { this.createdBy = createdBy; }
+    
+    public String getFileName() { return fileName; }
+    public void setFileName(String fileName) { this.fileName = fileName; }
+    
+    public String getFilePath() { return filePath; }
+    public void setFilePath(String filePath) { this.filePath = filePath; }
+    
+    public String getFileType() { return fileType; }
+    public void setFileType(String fileType) { this.fileType = fileType; }
+    
+    public Long getFileSize() { return fileSize; }
+    public void setFileSize(Long fileSize) { this.fileSize = fileSize; }
 }

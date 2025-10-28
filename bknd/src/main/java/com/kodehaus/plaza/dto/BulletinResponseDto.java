@@ -21,13 +21,18 @@ public class BulletinResponseDto {
     private Long createdById;
     private String createdByUsername;
     private String createdByFullName;
+    private String fileName;
+    private String filePath;
+    private String fileType;
+    private Long fileSize;
     
     // Constructors
     public BulletinResponseDto() {}
     
     public BulletinResponseDto(Long id, String title, String content, LocalDate publicationDate, Boolean isActive,
                               LocalDateTime createdAt, LocalDateTime updatedAt, Long plazaId, String plazaName,
-                              Long createdById, String createdByUsername, String createdByFullName) {
+                              Long createdById, String createdByUsername, String createdByFullName,
+                              String fileName, String filePath, String fileType, Long fileSize) {
         this.id = id;
         this.title = title;
         this.content = content;
@@ -40,6 +45,10 @@ public class BulletinResponseDto {
         this.createdById = createdById;
         this.createdByUsername = createdByUsername;
         this.createdByFullName = createdByFullName;
+        this.fileName = fileName;
+        this.filePath = filePath;
+        this.fileType = fileType;
+        this.fileSize = fileSize;
     }
     
     // Getters and Setters
@@ -78,4 +87,16 @@ public class BulletinResponseDto {
     
     public String getCreatedByFullName() { return createdByFullName; }
     public void setCreatedByFullName(String createdByFullName) { this.createdByFullName = createdByFullName; }
+    
+    public String getFileName() { return fileName; }
+    public void setFileName(String fileName) { this.fileName = fileName; }
+    
+    public String getFilePath() { return filePath; }
+    public void setFilePath(String filePath) { this.filePath = filePath; }
+    
+    public String getFileType() { return fileType; }
+    public void setFileType(String fileType) { this.fileType = fileType; }
+    
+    public Long getFileSize() { return fileSize; }
+    public void setFileSize(Long fileSize) { this.fileSize = fileSize; }
 }

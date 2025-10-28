@@ -101,13 +101,29 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(errorResponse);
     }
     
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex) {
+        System.out.println("Illegal argument error: " + ex.getMessage());
+        ex.printStackTrace();
+        
+        ErrorResponse errorResponse = new ErrorResponse(
+            HttpStatus.BAD_REQUEST.value(),
+            ex.getMessage(),
+            null,
+            LocalDateTime.now()
+        );
+        
+        return ResponseEntity.badRequest().body(errorResponse);
+    }
+    
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGlobalException(Exception ex, WebRequest request) {
         System.out.println("Unexpected error occurred: " + ex.getMessage());
+        ex.printStackTrace();
         
         ErrorResponse errorResponse = new ErrorResponse(
             HttpStatus.INTERNAL_SERVER_ERROR.value(),
-            "An unexpected error occurred",
+            "An unexpected error occurred: " + ex.getMessage(),
             null,
             LocalDateTime.now()
         );
