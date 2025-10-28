@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication(scanBasePackages = {"com.kodehaus.bknd", "com.kodehaus.plaza"})
-@EntityScan(basePackages = {"com.kodehaus.plaza.model"})
+@EntityScan(basePackages = {"com.kodehaus.plaza.entity"})
 @EnableJpaRepositories(basePackages = {"com.kodehaus.plaza.repository"})
 public class BkndApplication {
     public static void main(String[] args) {
