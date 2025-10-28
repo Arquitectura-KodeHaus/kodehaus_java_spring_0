@@ -1,5 +1,5 @@
 # Build stage
-FROM node:18-alpine AS build
+FROM node:22-alpine AS build
 
 WORKDIR /app
 
@@ -14,9 +14,9 @@ COPY . .
 
 # Build argument for backend URL
 ARG BACKEND_URL
-ENV VITE_BACKEND_URL=${BACKEND_URL}
+ENV NG_APP_BACKEND_URL=${BACKEND_URL}
 
-# Build the application
+# Build the application (Angular outputs to dist/frnt/browser by default)
 RUN npm run build
 
 # Production stage
