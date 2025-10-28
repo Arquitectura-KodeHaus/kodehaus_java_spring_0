@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgIf, NgFor } from '@angular/common';
 import { PlazaService } from '../../services/plaza.service';
 
 @Component({
   selector: 'app-boletin',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, NgIf, NgFor],
   templateUrl: './boletin.component.html',
   styleUrls: ['./boletin.component.css']
 })

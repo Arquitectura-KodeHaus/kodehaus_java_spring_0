@@ -189,7 +189,7 @@ export class AuthService {
    */
   can(permission: string): boolean {
     const user = this.getUser();
-    return user?.permissions.includes(permission) ?? false;
+    return user?.permissions?.includes(permission) ?? false;
   }
 
   /**

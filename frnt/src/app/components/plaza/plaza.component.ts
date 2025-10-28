@@ -15,6 +15,7 @@ export class PlazaComponent implements OnInit {
   plazas: PlazaDto[] = [];
   form!: FormGroup;
   selected?: PlazaDto;
+  isCreating = false;
 
   canEdit = false;
 
@@ -25,10 +26,13 @@ export class PlazaComponent implements OnInit {
 
     this.form = this.fb.group({
       id: [null],
-      nombre: ['', [Validators.required, Validators.minLength(3)]],
-      direccion: ['', [Validators.required]],
-      contacto: ['', [Validators.required]],
-      horario: ['', [Validators.required]]
+      name: ['', [Validators.required, Validators.minLength(3)]],
+      description: [''],
+      address: ['', [Validators.required]],
+      phoneNumber: ['', [Validators.required]],
+      email: ['', []],
+      openingHours: ['', [Validators.required]],
+      closingHours: ['', [Validators.required]]
     });
 
     if (!this.canEdit) {
@@ -58,26 +62,27 @@ export class PlazaComponent implements OnInit {
   }
 
   startEdit(plaza?: PlazaDto) {
+    this.isCreating = false;
     this.selected = plaza ?? undefined;
     if (plaza) {
       this.form.patchValue(plaza);
     } else {
-      this.form.reset({ id: null, nombre: '', direccion: '', contacto: '', horario: '' });
+      this.form.reset({ id: null, name: '', description: '', address: '', phoneNumber: '', email: '', openingHours: '', closingHours: '' });
+    }
+  }
+
+  newPlaza() {
+    this.isCreating = true;
+    this.selected = undefined;
+    this.form.reset({ id: null, name: '', description: '', address: '', phoneNumber: '', email: '', openingHours: '', closingHours: '' });
+    if (!this.canEdit) {
+      this.form.disable({ emitEvent: false });
     }
   }
 
   save() {
     const value: PlazaDto = this.form.value;
-    if (value.id) {
-      this.plazaService.updatePlaza(value.id, value).subscribe({
-        next: (updated) => {
-          const idx = this.plazas.findIndex(p => p.id === updated.id);
-          if (idx >= 0) this.plazas[idx] = updated;
-          this.startEdit(updated);
-        },
-        error: (e) => console.error('Error actualizando plaza', e)
-      });
-    } else {
+    if (this.isCreating || !value.id) {
       this.plazaService.createPlaza(value).subscribe({
         next: (created) => {
           this.plazas = [created, ...this.plazas];
@@ -85,10 +90,29 @@ export class PlazaComponent implements OnInit {
         },
         error: (e) => console.error('Error creando plaza', e)
       });
+    } else {
+      this.plazaService.updatePlaza(value.id!, value).subscribe({
+        next: (updated) => {
+          const idx = this.plazas.findIndex(p => p.id === updated.id);
+          if (idx >= 0) this.plazas[idx] = updated;
+          this.startEdit(updated);
+        },
+        error: (e) => console.error('Error actualizando plaza', e)
+      });
     }
   }
 
   select(plaza: PlazaDto) {
     this.startEdit(plaza);
+  }
+
+  cancel() {
+    if (this.selected) {
+      this.startEdit(this.selected);
+    } else if (this.plazas.length > 0) {
+      this.startEdit(this.plazas[0]);
+    } else {
+      this.newPlaza();
+    }
   }
 }

@@ -24,6 +24,101 @@ public class PlazaController {
         this.plazaRepository = plazaRepository;
     }
     
+    @PostMapping
+    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
+    public ResponseEntity<PlazaResponseDto> createPlaza(@RequestBody PlazaCreateRequest req) {
+        // Validaciones simples
+        if (req.getName() == null || req.getName().isBlank() ||
+            req.getAddress() == null || req.getAddress().isBlank() ||
+            req.getPhoneNumber() == null || req.getPhoneNumber().isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        Plaza plaza = new Plaza();
+        plaza.setName(req.getName());
+        plaza.setDescription(req.getDescription());
+        plaza.setAddress(req.getAddress());
+        plaza.setPhoneNumber(req.getPhoneNumber());
+        plaza.setEmail(req.getEmail());
+        plaza.setOpeningHours(req.getOpeningHours());
+        plaza.setClosingHours(req.getClosingHours());
+        plaza.setIsActive(true);
+
+        Plaza saved = plazaRepository.save(plaza);
+        return ResponseEntity.ok(convertToResponseDto(saved));
+    }
+    
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
+    public ResponseEntity<PlazaResponseDto> updatePlaza(@PathVariable Long id, @RequestBody PlazaUpdateRequest req) {
+        return plazaRepository.findById(id)
+            .filter(plaza -> plaza.getIsActive())
+            .map(plaza -> {
+                if (req.getName() != null) plaza.setName(req.getName());
+                if (req.getDescription() != null) plaza.setDescription(req.getDescription());
+                if (req.getAddress() != null) plaza.setAddress(req.getAddress());
+                if (req.getPhoneNumber() != null) plaza.setPhoneNumber(req.getPhoneNumber());
+                if (req.getEmail() != null) plaza.setEmail(req.getEmail());
+                if (req.getOpeningHours() != null) plaza.setOpeningHours(req.getOpeningHours());
+                if (req.getClosingHours() != null) plaza.setClosingHours(req.getClosingHours());
+                Plaza saved = plazaRepository.save(plaza);
+                return ResponseEntity.ok(convertToResponseDto(saved));
+            })
+            .orElse(ResponseEntity.notFound().build());
+    }
+
+    // DTO para actualización
+    public static class PlazaUpdateRequest {
+        private String name;
+        private String description;
+        private String address;
+        private String phoneNumber;
+        private String email;
+        private String openingHours; // formato HH:mm
+        private String closingHours; // formato HH:mm
+
+        public String getName() { return name; }
+        public void setName(String name) { this.name = name; }
+        public String getDescription() { return description; }
+        public void setDescription(String description) { this.description = description; }
+        public String getAddress() { return address; }
+        public void setAddress(String address) { this.address = address; }
+        public String getPhoneNumber() { return phoneNumber; }
+        public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+        public String getOpeningHours() { return openingHours; }
+        public void setOpeningHours(String openingHours) { this.openingHours = openingHours; }
+        public String getClosingHours() { return closingHours; }
+        public void setClosingHours(String closingHours) { this.closingHours = closingHours; }
+    }
+    
+    // DTO para creación
+    public static class PlazaCreateRequest {
+        private String name;
+        private String description;
+        private String address;
+        private String phoneNumber;
+        private String email;
+        private String openingHours; // formato HH:mm
+        private String closingHours; // formato HH:mm
+
+        public String getName() { return name; }
+        public void setName(String name) { this.name = name; }
+        public String getDescription() { return description; }
+        public void setDescription(String description) { this.description = description; }
+        public String getAddress() { return address; }
+        public void setAddress(String address) { this.address = address; }
+        public String getPhoneNumber() { return phoneNumber; }
+        public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+        public String getOpeningHours() { return openingHours; }
+        public void setOpeningHours(String openingHours) { this.openingHours = openingHours; }
+        public String getClosingHours() { return closingHours; }
+        public void setClosingHours(String closingHours) { this.closingHours = closingHours; }
+    }
+    
     @GetMapping
     @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
     public ResponseEntity<List<PlazaResponseDto>> getAllPlazas() {

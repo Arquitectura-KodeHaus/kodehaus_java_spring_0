@@ -17,3 +17,7 @@
   font-size: 0.875rem;
   font-weight: 600;
 }
+
+.trend-up { color: #16a34a; font-weight: 700; }
+.trend-down { color: #dc2626; font-weight: 700; }
+.trend-flat { color: #4b5563; font-weight: 700; }

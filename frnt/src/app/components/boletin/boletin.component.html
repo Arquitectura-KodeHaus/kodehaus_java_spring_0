@@ -10,16 +10,24 @@
       <thead>
         <tr>
           <th>Producto</th>
+          <th>Categoría</th>
           <th>Precio</th>
           <th>Unidad</th>
+          <th>Variación</th>
           <th>Fecha</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let item of boletin">
           <td>{{ item.producto }}</td>
+          <td><span class="badge">{{ item.categoria }}</span></td>
           <td><strong>{{ item.precio | currency:'COP':'symbol-narrow':'1.0-0' }}</strong></td>
           <td><span class="badge">{{ item.unidad }}</span></td>
+          <td>
+            <span [ngClass]="item.variacion > 0 ? 'trend-up' : (item.variacion < 0 ? 'trend-down' : 'trend-flat')">
+              {{ item.variacion }}%
+            </span>
+          </td>
           <td>{{ item.fecha }}</td>
         </tr>
       </tbody>

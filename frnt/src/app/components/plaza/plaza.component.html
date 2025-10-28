@@ -3,6 +3,8 @@
     <h2>🏬 Plazas Registradas</h2>
     <p class="subtitle">Gestión de plazas de mercado</p>
     <span *ngIf="!canEdit" class="role-badge readonly">Solo lectura</span>
+    <div class="spacer"></div>
+    <button class="btn" (click)="newPlaza()" [disabled]="!canEdit">Nueva plaza</button>
   </div>
 
   <div class="two-columns">
@@ -12,17 +14,17 @@
           <tr>
             <th>Nombre</th>
             <th>Dirección</th>
-            <th>Contacto</th>
+            <th>Teléfono</th>
             <th>Horario</th>
             <th></th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let plaza of plazas">
-            <td>{{ plaza.nombre }}</td>
-            <td>{{ plaza.direccion }}</td>
-            <td>{{ plaza.contacto }}</td>
-            <td>{{ plaza.horario }}</td>
+            <td>{{ plaza.name }}</td>
+            <td>{{ plaza.address }}</td>
+            <td>{{ plaza.phoneNumber }}</td>
+            <td>{{ plaza.openingHours }} - {{ plaza.closingHours }}</td>
             <td>
               <button class="btn" (click)="select(plaza)" [disabled]="!canEdit">Editar</button>
             </td>
@@ -32,29 +34,41 @@
     </div>
 
     <div class="form-card">
-      <h3>{{ form.value.id ? 'Editar Plaza' : 'Crear Plaza' }}</h3>
+      <h3>{{ isCreating ? 'Crear Plaza' : 'Editar Plaza' }}</h3>
       <form [formGroup]="form" (ngSubmit)="save()">
         <div class="form-grid">
           <label>
             <span>Nombre</span>
-            <input type="text" formControlName="nombre" placeholder="Ej. Plaza Central" />
+            <input type="text" formControlName="name" placeholder="Ej. Plaza Central" />
           </label>
           <label>
             <span>Dirección</span>
-            <input type="text" formControlName="direccion" placeholder="Calle 1 # 2-34" />
+            <input type="text" formControlName="address" placeholder="Calle 1 # 2-34" />
           </label>
           <label>
-            <span>Contacto</span>
-            <input type="text" formControlName="contacto" placeholder="Ej. 3001234567" />
+            <span>Teléfono</span>
+            <input type="text" formControlName="phoneNumber" placeholder="Ej. 3001234567" />
           </label>
           <label>
-            <span>Horario</span>
-            <input type="text" formControlName="horario" placeholder="Lun-Dom 6am - 6pm" />
+            <span>Email</span>
+            <input type="email" formControlName="email" placeholder="ejemplo@plaza.com" />
+          </label>
+          <label>
+            <span>Hora Apertura</span>
+            <input type="time" formControlName="openingHours" />
+          </label>
+          <label>
+            <span>Hora Cierre</span>
+            <input type="time" formControlName="closingHours" />
+          </label>
+          <label class="full">
+            <span>Descripción</span>
+            <textarea formControlName="description" rows="3" placeholder="Descripción breve de la plaza"></textarea>
           </label>
         </div>
         <div class="form-actions">
-          <button class="btn primary" type="submit" [disabled]="form.invalid || !canEdit">Guardar</button>
-          <button class="btn" type="button" (click)="startEdit()" [disabled]="!canEdit">Nuevo</button>
+          <button class="btn primary" type="submit" [disabled]="form.invalid || !canEdit">{{ isCreating ? 'Crear' : 'Guardar' }}</button>
+          <button class="btn" type="button" (click)="cancel()">Cancelar</button>
         </div>
       </form>
     </div>

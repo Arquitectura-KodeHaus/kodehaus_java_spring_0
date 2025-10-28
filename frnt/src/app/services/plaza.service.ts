@@ -4,15 +4,19 @@ import { Observable } from 'rxjs';
 
 export interface PlazaDto {
   id?: number;
-  nombre: string;
-  direccion: string;
-  contacto: string;
-  horario: string;
+  name: string;
+  description?: string;
+  address: string;
+  phoneNumber: string;
+  email?: string;
+  openingHours: string; // HH:mm
+  closingHours: string; // HH:mm
 }
 
 @Injectable({ providedIn: 'root' })
 export class PlazaService {
-  private apiUrl = 'http://localhost:8080/api';
+  // Backend corre en 8081 según application.properties
+  private apiUrl = 'http://localhost:8081/api';
 
   constructor(private http: HttpClient) {}
 
@@ -30,10 +34,6 @@ export class PlazaService {
 
   updatePlaza(id: number, plaza: PlazaDto): Observable<PlazaDto> {
     return this.http.put<PlazaDto>(`${this.apiUrl}/plazas/${id}`, plaza);
-  }
-
-  deletePlaza(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/plazas/${id}`);
   }
 
   getBoletin(): Observable<any[]> {
