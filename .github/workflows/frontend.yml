@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'stocks-frontend/**'
+      - 'frnt/**'
       - '.github/workflows/frontend.yml'
 
 env:
@@ -45,11 +45,11 @@ jobs:
       - name: Build & Push Docker image
         env:
           IMAGE_TAG: ${{ github.sha }}
-          BACKEND_URL: ${{ vars.BACKEND_URL }}
+          BACKEND_URL_JAVA_2: ${{ vars.BACKEND_URL_JAVA_2 }}
         run: |
           IMAGE_URI="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/${{ env.IMAGE_NAME }}:${IMAGE_TAG}"
           
-          echo "🔨 Building image with BACKEND_URL: ${BACKEND_URL}"
+          echo "🔨 Building image with BACKEND_URL: ${BACKEND_URL_JAVA_2}"
           
           docker build \
             --build-arg BACKEND_URL="${BACKEND_URL_JAVA_2}" \
