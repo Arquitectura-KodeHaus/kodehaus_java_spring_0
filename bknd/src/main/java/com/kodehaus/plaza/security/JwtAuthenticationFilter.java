@@ -5,7 +5,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-// Lombok annotations removed for compatibility
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,6 +15,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * JWT Authentication Filter
@@ -29,10 +30,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
     
+    // ✅ Rutas que NO necesitan autenticación JWT
+    private static final List<String> PUBLIC_PATHS = Arrays.asList(
+        "/actuator",
+        "/api/auth",
+        "/api/managers/register",
+        "/h2-console",
+        "/error"
+    );
+    
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, 
                                     FilterChain filterChain) throws ServletException, IOException {
         try {
+            // ✅ Si es una ruta pública, NO validar JWT
+            String path = request.getRequestURI();
+            if (isPublicPath(path)) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+            
             String jwt = getJwtFromRequest(request);
             
             if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
@@ -50,6 +67,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
         
         filterChain.doFilter(request, response);
+    }
+    
+    // ✅ Verificar si la ruta es pública
+    private boolean isPublicPath(String path) {
+        return PUBLIC_PATHS.stream().anyMatch(path::startsWith);
     }
     
     private String getJwtFromRequest(HttpServletRequest request) {

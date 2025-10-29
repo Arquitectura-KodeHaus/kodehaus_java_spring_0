@@ -45,16 +45,21 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
+                // ✅ IMPORTANTE: Estos endpoints DEBEN estar primero y sin autenticación
+                .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/managers/register").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
-                .requestMatchers("/actuator/**").permitAll()
+                .requestMatchers("/error").permitAll()
+                
+                // Protected endpoints
                 .requestMatchers("/api/users/**").hasAnyRole("MANAGER", "ADMIN")
                 .requestMatchers("/api/roles/**").hasAnyRole("MANAGER", "ADMIN")
                 .requestMatchers("/api/permissions/**").hasAnyRole("MANAGER", "ADMIN")
                 .requestMatchers("/api/bulletins/**").hasAnyRole("MANAGER", "EMPLOYEE_GENERAL", "EMPLOYEE_SECURITY", "EMPLOYEE_PARKING")
                 .requestMatchers("/api/plazas/**").hasAnyRole("MANAGER", "ADMIN")
                 .requestMatchers("/api/products/**").hasAnyRole("MANAGER", "ADMIN", "EMPLOYEE_GENERAL")
+                
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -68,16 +73,27 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         
-        // ✅ PRODUCCIÓN: Configuración correcta
         configuration.setAllowedOriginPatterns(Arrays.asList(
             "https://*.run.app",
             "https://*.a.run.app",
-            "http://localhost:*"
+            "http://localhost:*",
+            "http://127.0.0.1:*"
         ));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        
+        configuration.setAllowedMethods(Arrays.asList(
+            "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
+        ));
+        
         configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
-        configuration.setAllowCredentials(true); // ✅ true con patterns específicos
+        
+        configuration.setExposedHeaders(Arrays.asList(
+            "Authorization",
+            "Content-Type",
+            "Content-Length",
+            "X-Total-Count"
+        ));
+        
+        configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
