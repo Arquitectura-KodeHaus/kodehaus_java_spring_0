@@ -16,6 +16,9 @@
       <a routerLink="/locales" routerLinkActive="active">Locales</a>
       <a routerLink="/pagos" routerLinkActive="active">Pagos</a>
       <a routerLink="/parqueadero" routerLinkActive="active">Parqueadero</a>
+      <a routerLink="/usuarios" routerLinkActive="active" *ngIf="authService.hasRole('MANAGER') || authService.hasRole('ADMIN')">
+        Usuarios
+      </a>
     </nav>
 
     <!-- Información del usuario y logout -->
@@ -25,7 +28,7 @@
           <span class="welcome-text">Bienvenido,</span>
           <span class="username">{{ user.fullName }}</span>
           <span class="user-role" *ngIf="user.roles.length > 0">
-            ({{ user.roles.join(', ') }})
+            ({{ getUserRolesDisplay() }})
           </span>
         </div>
         <div class="plaza-info" *ngIf="user.plazaName">

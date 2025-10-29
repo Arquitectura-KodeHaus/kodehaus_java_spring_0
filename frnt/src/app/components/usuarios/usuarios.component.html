@@ -1,0 +1,254 @@
+<div class="usuarios-container" *ngIf="canManageUsers()">
+  <div class="usuarios-header">
+    <h1>Gestión de Usuarios</h1>
+    <p>Crear y administrar usuarios del sistema</p>
+  </div>
+
+  <!-- Mensajes de estado -->
+  <div class="messages" *ngIf="errorMessage || successMessage">
+    <div class="error-message" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </div>
+    <div class="success-message" *ngIf="successMessage">
+      {{ successMessage }}
+    </div>
+  </div>
+
+  <!-- Formulario de usuario -->
+  <div class="form-section">
+    <h2>{{ isEditing ? 'Editar Usuario' : 'Crear Nuevo Usuario' }}</h2>
+    
+    <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="user-form">
+      <div class="form-row">
+        <!-- Usuario -->
+        <div class="form-group">
+          <label for="username">Usuario *</label>
+          <input
+            type="text"
+            id="username"
+            formControlName="username"
+            placeholder="Ingrese el nombre de usuario"
+            [class.error]="hasError('username')"
+          />
+          <span class="error-message" *ngIf="hasError('username')">
+            {{ getErrorMessage('username') }}
+          </span>
+        </div>
+
+        <!-- Email -->
+        <div class="form-group">
+          <label for="email">Email *</label>
+          <input
+            type="email"
+            id="email"
+            formControlName="email"
+            placeholder="Ingrese el email"
+            [class.error]="hasError('email')"
+          />
+          <span class="error-message" *ngIf="hasError('email')">
+            {{ getErrorMessage('email') }}
+          </span>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <!-- Nombre -->
+        <div class="form-group">
+          <label for="firstName">Nombre *</label>
+          <input
+            type="text"
+            id="firstName"
+            formControlName="firstName"
+            placeholder="Ingrese el nombre"
+            [class.error]="hasError('firstName')"
+          />
+          <span class="error-message" *ngIf="hasError('firstName')">
+            {{ getErrorMessage('firstName') }}
+          </span>
+        </div>
+
+        <!-- Apellido -->
+        <div class="form-group">
+          <label for="lastName">Apellido *</label>
+          <input
+            type="text"
+            id="lastName"
+            formControlName="lastName"
+            placeholder="Ingrese el apellido"
+            [class.error]="hasError('lastName')"
+          />
+          <span class="error-message" *ngIf="hasError('lastName')">
+            {{ getErrorMessage('lastName') }}
+          </span>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <!-- Contraseña -->
+        <div class="form-group">
+          <label for="password">Contraseña *</label>
+          <input
+            type="password"
+            id="password"
+            formControlName="password"
+            placeholder="Ingrese la contraseña"
+            [class.error]="hasError('password')"
+          />
+          <span class="error-message" *ngIf="hasError('password')">
+            {{ getErrorMessage('password') }}
+          </span>
+        </div>
+
+        <!-- Teléfono -->
+        <div class="form-group">
+          <label for="phoneNumber">Teléfono</label>
+          <input
+            type="tel"
+            id="phoneNumber"
+            formControlName="phoneNumber"
+            placeholder="Ingrese el teléfono"
+            [class.error]="hasError('phoneNumber')"
+          />
+          <span class="error-message" *ngIf="hasError('phoneNumber')">
+            {{ getErrorMessage('phoneNumber') }}
+          </span>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <!-- Plaza -->
+        <div class="form-group">
+          <label for="plazaId">Plaza *</label>
+          <select
+            id="plazaId"
+            formControlName="plazaId"
+            [class.error]="hasError('plazaId')"
+          >
+            <option value="">Seleccione una plaza</option>
+            <option *ngFor="let plaza of plazas" [value]="plaza.id">
+              {{ plaza.name }}
+            </option>
+          </select>
+          <span class="error-message" *ngIf="hasError('plazaId')">
+            {{ getErrorMessage('plazaId') }}
+          </span>
+        </div>
+
+        <!-- Roles -->
+        <div class="form-group">
+          <label>Rol *</label>
+          <div class="roles-container">
+            <div *ngFor="let role of roles" class="role-radio">
+              <label>
+                <input
+                  type="radio"
+                  name="roleId"
+                  [value]="role.id"
+                  (change)="onRoleChange($event, role.id)"
+                  [checked]="isRoleSelected(role.id)"
+                />
+                <span>{{ getRoleDisplayName(role.name) }} - {{ role.description }}</span>
+              </label>
+            </div>
+          </div>
+          <span class="error-message" *ngIf="hasError('roleId')">
+            {{ getErrorMessage('roleId') }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Botones -->
+      <div class="form-actions">
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="isLoading || userForm.invalid"
+        >
+          <span *ngIf="!isLoading">{{ isEditing ? 'Actualizar' : 'Crear' }} Usuario</span>
+          <span *ngIf="isLoading">Procesando...</span>
+        </button>
+        
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="resetForm()"
+          [disabled]="isLoading"
+        >
+          Cancelar
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Lista de usuarios -->
+  <div class="users-section">
+    <h2>Usuarios Existentes</h2>
+    <p class="info-text">
+      <em>Nota: Los usuarios con rol MANAGER no se muestran aquí ya que tienen permisos administrativos.</em>
+    </p>
+    
+    <div class="loading" *ngIf="isLoading">
+      <p>Cargando usuarios...</p>
+    </div>
+
+    <div class="users-table" *ngIf="!isLoading && users.length > 0">
+      <table>
+        <thead>
+          <tr>
+            <th>Usuario</th>
+            <th>Nombre Completo</th>
+            <th>Email</th>
+            <th>Plaza</th>
+            <th>Roles</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of users">
+            <td>{{ user.username }}</td>
+            <td>{{ user.fullName }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ user.plazaName }}</td>
+            <td>
+              <span *ngFor="let role of user.roles" class="role-badge">
+                {{ getRoleDisplayName(role) }}
+              </span>
+            </td>
+            <td>
+              <span class="status-badge" [class.active]="user.isActive" [class.inactive]="!user.isActive">
+                {{ user.isActive ? 'Activo' : 'Inactivo' }}
+              </span>
+            </td>
+            <td class="actions">
+              <button
+                class="btn btn-sm btn-edit"
+                (click)="editUser(user)"
+                [disabled]="isLoading"
+              >
+                Editar
+              </button>
+              <button
+                class="btn btn-sm btn-delete"
+                (click)="deleteUser(user)"
+                [disabled]="isLoading"
+              >
+                Eliminar
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="no-users" *ngIf="!isLoading && users.length === 0">
+      <p>No hay usuarios registrados.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Mensaje de acceso denegado -->
+<div class="access-denied" *ngIf="!canManageUsers()">
+  <h2>Acceso Denegado</h2>
+  <p>No tiene permisos para gestionar usuarios. Solo los managers y administradores pueden acceder a esta funcionalidad.</p>
+</div>

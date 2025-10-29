@@ -95,11 +95,15 @@
 }
 
 .user-role {
-  font-size: 0.85rem;
-  opacity: 0.85;
-  padding: 0.2rem 0.5rem;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 0.25rem 0.6rem;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .plaza-info {

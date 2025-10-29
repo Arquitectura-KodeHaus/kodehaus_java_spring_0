@@ -2,6 +2,7 @@ package com.kodehaus.plaza.service;
 
 import com.kodehaus.plaza.entity.*;
 import com.kodehaus.plaza.repository.*;
+import java.math.BigDecimal;
 // Lombok annotations removed for compatibility
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,16 +24,19 @@ public class DataInitializationService implements CommandLineRunner {
     private final RoleRepository roleRepository;
     private final PermissionRepository permissionRepository;
     private final BulletinRepository bulletinRepository;
+    private final ProductRepository productRepository;
     private final PasswordEncoder passwordEncoder;
     
     public DataInitializationService(PlazaRepository plazaRepository, UserRepository userRepository,
                                    RoleRepository roleRepository, PermissionRepository permissionRepository,
-                                   BulletinRepository bulletinRepository, PasswordEncoder passwordEncoder) {
+                                   BulletinRepository bulletinRepository, ProductRepository productRepository,
+                                   PasswordEncoder passwordEncoder) {
         this.plazaRepository = plazaRepository;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.permissionRepository = permissionRepository;
         this.bulletinRepository = bulletinRepository;
+        this.productRepository = productRepository;
         this.passwordEncoder = passwordEncoder;
     }
     
@@ -52,6 +56,9 @@ public class DataInitializationService implements CommandLineRunner {
         
         // Create users
         createUsers();
+        
+        // Create products
+        createProducts();
         
         // Create sample bulletins
         createBulletins();
@@ -222,6 +229,60 @@ public class DataInitializationService implements CommandLineRunner {
             general.setRoles(Set.of(generalRole));
             userRepository.save(general);
         }
+    }
+    
+    private void createProducts() {
+        if (productRepository.count() == 0) {
+            System.out.println("Creating products...");
+            
+            Plaza plaza = plazaRepository.findByName("Centro Comercial Plaza Central").orElse(null);
+            
+            if (plaza != null) {
+                // Verduras
+                createProduct("Tomate", "Tomate rojo fresco", "Verduras", "kg", new BigDecimal("2000.00"), plaza);
+                createProduct("Cebolla", "Cebolla blanca", "Verduras", "kg", new BigDecimal("1500.00"), plaza);
+                createProduct("Zanahoria", "Zanahoria fresca", "Verduras", "kg", new BigDecimal("1800.00"), plaza);
+                createProduct("Lechuga", "Lechuga fresca", "Verduras", "unidad", new BigDecimal("2500.00"), plaza);
+                createProduct("Pimentón", "Pimentón rojo", "Verduras", "kg", new BigDecimal("3000.00"), plaza);
+                
+                // Tubérculos
+                createProduct("Papa", "Papa criolla", "Tubérculos", "kg", new BigDecimal("1000.00"), plaza);
+                createProduct("Yuca", "Yuca fresca", "Tubérculos", "kg", new BigDecimal("1200.00"), plaza);
+                createProduct("Ñame", "Ñame fresco", "Tubérculos", "kg", new BigDecimal("1500.00"), plaza);
+                createProduct("Plátano", "Plátano verde", "Tubérculos", "kg", new BigDecimal("2000.00"), plaza);
+                
+                // Frutas
+                createProduct("Banano", "Banano maduro", "Frutas", "kg", new BigDecimal("3000.00"), plaza);
+                createProduct("Manzana", "Manzana roja", "Frutas", "kg", new BigDecimal("4000.00"), plaza);
+                createProduct("Naranja", "Naranja dulce", "Frutas", "kg", new BigDecimal("3500.00"), plaza);
+                createProduct("Uva", "Uva fresca", "Frutas", "kg", new BigDecimal("6000.00"), plaza);
+                createProduct("Mango", "Mango maduro", "Frutas", "kg", new BigDecimal("2500.00"), plaza);
+                
+                // Cárnicos
+                createProduct("Pollo", "Pechuga de pollo", "Cárnicos", "kg", new BigDecimal("12000.00"), plaza);
+                createProduct("Res", "Carne de res", "Cárnicos", "kg", new BigDecimal("18000.00"), plaza);
+                createProduct("Cerdo", "Carne de cerdo", "Cárnicos", "kg", new BigDecimal("15000.00"), plaza);
+                createProduct("Pescado", "Pescado fresco", "Cárnicos", "kg", new BigDecimal("20000.00"), plaza);
+                
+                // Lácteos
+                createProduct("Leche", "Leche fresca", "Lácteos", "litro", new BigDecimal("4000.00"), plaza);
+                createProduct("Queso", "Queso fresco", "Lácteos", "kg", new BigDecimal("8000.00"), plaza);
+                createProduct("Yogurt", "Yogurt natural", "Lácteos", "unidad", new BigDecimal("2000.00"), plaza);
+                createProduct("Mantequilla", "Mantequilla", "Lácteos", "unidad", new BigDecimal("3000.00"), plaza);
+            }
+        }
+    }
+    
+    private void createProduct(String name, String description, String category, String unit, BigDecimal price, Plaza plaza) {
+        Product product = new Product();
+        product.setName(name);
+        product.setDescription(description);
+        product.setCategory(category);
+        product.setUnit(unit);
+        product.setPrice(price);
+        product.setIsAvailable(true);
+        product.setPlaza(plaza);
+        productRepository.save(product);
     }
     
     private void createBulletins() {

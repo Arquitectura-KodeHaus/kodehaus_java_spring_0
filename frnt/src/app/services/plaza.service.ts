@@ -11,6 +11,7 @@ export interface PlazaDto {
   email?: string;
   openingHours: string; // HH:mm
   closingHours: string; // HH:mm
+  isActive?: boolean;
 }
 
 @Injectable({ providedIn: 'root' })

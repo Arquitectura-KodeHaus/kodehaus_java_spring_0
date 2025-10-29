@@ -39,5 +39,29 @@ export class HeaderComponent implements OnInit, OnDestroy {
   logout(): void {
     this.authService.logout();
   }
+
+  /**
+   * Convierte el nombre técnico del rol a un nombre más amigable
+   */
+  getRoleDisplayName(role: string): string {
+    const roleMap: { [key: string]: string } = {
+      'EMPLOYEE_SECURITY': 'Seguridad',
+      'EMPLOYEE_PARKING': 'Parqueaderos',
+      'EMPLOYEE_GENERAL': 'Empleado',
+      'MANAGER': 'Manager',
+      'ADMIN': 'Administrador'
+    };
+    return roleMap[role] || role;
+  }
+
+  /**
+   * Obtiene los roles del usuario en formato amigable
+   */
+  getUserRolesDisplay(): string {
+    if (!this.user || !this.user.roles) {
+      return '';
+    }
+    return this.user.roles.map(role => this.getRoleDisplayName(role)).join(', ');
+  }
 }
 
