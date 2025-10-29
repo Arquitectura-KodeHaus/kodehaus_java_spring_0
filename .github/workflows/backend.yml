@@ -64,7 +64,6 @@ jobs:
           echo "📦 Pushing image..."
           docker push "$IMAGE_URI"
           
-          # Obtener digest para deploy inmutable
           DIGEST=$(gcloud artifacts docker images describe "$IMAGE_URI" --format='value(image_summary.digest)')
           echo "IMAGE_URI_DIGEST=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/${{ env.IMAGE_NAME }}@${DIGEST}" >> $GITHUB_ENV
 
@@ -93,7 +92,10 @@ jobs:
             --max-instances 10 \
             --timeout 600 \
             --port 8080 \
-            --set-env-vars "SPRING_DATASOURCE_DB=postgres,SPRING_DATASOURCE_USERNAME=postgres,SPRING_DATASOURCE_PASSWORD=Pr0d-ChangeMe!"
+            --startup-cpu-boost \
+            --cpu-throttling \
+            --no-cpu-throttling \
+            --set-env-vars "SPRING_DATASOURCE_DB=postgres,SPRING_DATASOURCE_USERNAME=postgres,SPRING_DATASOURCE_PASSWORD=Pr0d-ChangeMe!,JWT_SECRET=mySecretKeyForJWTTokenGenerationAndValidationMustBeAtLeast512BitsLong12345678901234567890"
 
       - name: Verify deployment
         working-directory: .
@@ -108,18 +110,28 @@ jobs:
           echo "⏳ Esperando 45 segundos para que el servicio inicie..."
           sleep 45
           
-          # Health check
           echo "🔍 Verificando health check..."
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${SERVICE_URL}/actuator/health" || echo "000")
+          for i in {1..10}; do
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${SERVICE_URL}/actuator/health" || echo "000")
+            
+            if [ "$HTTP_CODE" -eq 200 ]; then
+              echo "✅ Backend health check passed!"
+              exit 0
+            else
+              echo "⚠️ Intento $i: Health check returned HTTP ${HTTP_CODE}"
+              if [ $i -lt 10 ]; then
+                echo "   Reintentando en 10 segundos..."
+                sleep 10
+              fi
+            fi
+          done
           
-          if [ "$HTTP_CODE" -eq 200 ]; then
-            echo "✅ Backend health check passed!"
-          else
-            echo "⚠️ Health check returned HTTP ${HTTP_CODE}"
-            echo "📊 Check logs at: https://console.cloud.google.com/run/detail/${{ env.REGION }}/${{ env.SERVICE }}/logs"
-          fi
+          echo "❌ Health check failed after 10 attempts"
+          echo "📊 Check logs at: https://console.cloud.google.com/run/detail/${{ env.REGION }}/${{ env.SERVICE }}/logs"
+          exit 1
 
       - name: Display deployment info
+        if: success()
         working-directory: .
         run: |
           SERVICE_URL=$(gcloud run services describe "${{ env.SERVICE }}" \
