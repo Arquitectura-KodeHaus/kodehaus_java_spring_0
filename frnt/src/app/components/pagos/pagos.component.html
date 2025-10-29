@@ -1,0 +1,66 @@
+<div class="page-container">
+  <div class="page-header">
+    <h2>💳 Registro de Pagos</h2>
+    <p class="subtitle">Historial de pagos y obligaciones</p>
+  </div>
+
+  <div class="content-card" *ngIf="pagos.length > 0; else noData">
+    <table class="data-table">
+    <thead>
+      <tr>
+        <th>Referencia</th>
+        <th>Concepto</th>
+        <th>Tipo</th>
+        <th>Monto</th>
+        <th>Fecha</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let pago of pagos">
+        <td><code class="ref-code">{{ pago.referencia }}</code></td>
+        <td>{{ pago.concepto }}</td>
+        <td><span class="badge-tipo">{{ pago.tipo }}</span></td>
+        <td><strong>{{ pago.monto | currency:'COP':'symbol-narrow':'1.0-0' }}</strong></td>
+        <td>{{ pago.fecha }}</td>
+        <td><span [ngClass]="pago.estado === 'Pagado' ? 'badge-success' : 'badge-warning'">{{ pago.estado }}</span></td>
+        <td>
+          <button *ngIf="pago.estado !== 'Pagado'" class="btn-outline" (click)="openFactura(pago)">Ver factura</button>
+          <span *ngIf="pago.estado === 'Pagado'" class="text-muted">—</span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+  <!-- Modal Factura Mock -->
+  <div class="modal-backdrop" *ngIf="showFactura" (click)="closeFactura()"></div>
+  <div class="modal" *ngIf="showFactura">
+    <div class="modal-header">
+      <h3>Factura</h3>
+      <button class="btn-icon" (click)="closeFactura()">✕</button>
+    </div>
+    <div class="modal-body" *ngIf="selectedPago as p">
+      <div class="factura">
+        <div><strong>Referencia:</strong> {{ p.referencia }}</div>
+        <div><strong>Concepto:</strong> {{ p.concepto }}</div>
+        <div><strong>Tipo:</strong> {{ p.tipo }}</div>
+        <div><strong>Monto:</strong> {{ p.monto | currency:'COP':'symbol-narrow':'1.0-0' }}</div>
+        <div><strong>Fecha:</strong> {{ p.fecha }}</div>
+        <div><strong>Estado:</strong> {{ p.estado }}</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" (click)="descargarFactura()">Descargar</button>
+      <button class="btn btn-primary" (click)="pagarEnLinea()">Pagar en línea</button>
+    </div>
+  </div>
+
+  <ng-template #noData>
+    <div class="empty-state">
+      <div class="empty-icon">💰</div>
+      <h3>No hay pagos registrados</h3>
+      <p>No se han registrado pagos en el sistema</p>
+    </div>
+  </ng-template>

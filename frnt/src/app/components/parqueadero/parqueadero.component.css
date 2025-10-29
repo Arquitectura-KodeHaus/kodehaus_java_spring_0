@@ -1,0 +1,55 @@
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.stat-card {
+  background: var(--card, #ffffff);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(16,24,40,.06);
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text, #1f2937);
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: var(--muted, #475569);
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.badge-placa {
+  /* Estilo tipo placa colombiana: fondo amarillo con texto negro y borde contrastado */
+  background: #facc15; /* yellow-400 */
+  color: #111827; /* near-black */
+  border: 2px solid #b45309; /* amber-700 */
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  letter-spacing: 0.12em;
+}
+
+/* Mini bar chart for monthly earnings */
+.chart-bars { display:flex; align-items:flex-end; justify-content: space-around; gap:.5rem; height: 180px; padding:.5rem 0; overflow:hidden; }
+.bar { --val: 0.5; display:flex; flex-direction:column; align-items:center; gap:.35rem; flex: 1; min-width: 0; max-width: 80px; }
+.bar-col { width: 100%; max-height: 140px; height: calc(var(--val) * 140px); background: linear-gradient(180deg, var(--brand-400, #4ade80), var(--brand-600, #16a34a)); border-radius: 8px; box-shadow: 0 4px 14px rgba(20,83,45,.25); transition: height .3s ease; }
+.bar-label { font-size: .75rem; color: var(--muted, #475569); font-weight: 700; }
+.bar-value { font-size: .7rem; color: var(--text, #1f2937); opacity:.85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.chart-resumen { margin-top:.5rem; }
+
+.tarifas-grid { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: .75rem; }
+.tarifa-item { background: var(--neutral-50, #f8fafc); border: 1px solid var(--neutral-200, #e2e8f0); border-radius: 10px; padding:.75rem; }
+.t-title { font-weight: 800; color: var(--text, #1f2937); margin-bottom:.25rem; }
+.t-body { color: var(--neutral-700, #334155); display:grid; gap:.15rem; }

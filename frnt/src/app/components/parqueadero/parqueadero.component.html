@@ -1,0 +1,141 @@
+<div class="page-container">
+  <div class="page-header">
+    <h2>🚗 Control de Parqueadero</h2>
+    <p class="subtitle">Registro de vehículos y tarifas</p>
+  </div>
+
+  <div class="stats-grid" *ngIf="cuposTotales > 0">
+    <div class="stat-card">
+      <div class="stat-value">{{ cuposTotales }}</div>
+      <div class="stat-label">Cupos Totales</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">{{ ocupados }}</div>
+      <div class="stat-label">Ocupados</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">{{ cuposTotales - ocupados }}</div>
+      <div class="stat-label">Disponibles</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">{{ ocupacion | number:'1.0-0' }}%</div>
+      <div class="stat-label">Ocupación</div>
+    </div>
+  </div>
+
+  <div class="two-columns">
+    <!-- Ingresos mensuales (mini bar chart) -->
+    <div class="content-card">
+      <div style="padding:1rem 1.25rem;">
+        <h3 style="margin:0 0 .75rem 0;">Ingresos por mes</h3>
+        <div class="chart-bars" *ngIf="ingresosMensuales.length">
+          <div class="bar" *ngFor="let m of ingresosMensuales" [style.--val]="m.ingresos / maxIngresos">
+            <div class="bar-col" [title]="m.ingresos | currency:'COP':'symbol-narrow':'1.0-0'"></div>
+            <div class="bar-label">{{ m.mes }}</div>
+            <div class="bar-value">{{ m.ingresos | currency:'COP':'symbol-narrow':'1.0-0' }}</div>
+          </div>
+        </div>
+        <div class="chart-resumen">
+          <span class="badge brand">Hoy: {{ ingresosHoy | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tarifas -->
+    <div class="content-card">
+      <div style="padding:1rem 1.25rem;">
+        <h3 style="margin:0 0 .75rem 0;">Tarifas por hora</h3>
+        <div class="tarifas-grid" *ngIf="tarifas.baseEmpleadoPorHora as base">
+          <div class="tarifa-item">
+            <div class="t-title">Empleado (base)</div>
+            <div class="t-body">
+              <div>Carro: <strong>{{ base.carro | currency:'COP':'symbol-narrow':'1.0-0' }}</strong></div>
+              <div>Moto: <strong>{{ base.moto | currency:'COP':'symbol-narrow':'1.0-0' }}</strong></div>
+              <div>Camión: <strong>{{ base.camion | currency:'COP':'symbol-narrow':'1.0-0' }}</strong></div>
+            </div>
+          </div>
+          <div class="tarifa-item" *ngIf="tarifas.factorPorCliente as factor">
+            <div class="t-title">Factores por cliente</div>
+            <div class="t-body">
+              <div>Empleado: <strong>x{{ factor.empleado }}</strong></div>
+              <div>Dueño de local: <strong>x{{ factor.duenoLocal }}</strong></div>
+              <div>Visitante: <strong>x{{ factor.visitante }}</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vehículos aún dentro -->
+  <div class="content-card" *ngIf="vehiculosDentro.length" style="margin-top:1.5rem;">
+    <h3 style="margin:0; padding:1rem 1.25rem; border-bottom: 1px solid var(--neutral-200, #e2e8f0);">Vehículos aún dentro</h3>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Placa</th>
+          <th>Cliente</th>
+          <th>Vehículo</th>
+          <th>Entrada</th>
+          <th>Tarifa/Hora</th>
+          <th>Horas</th>
+          <th>Estimado</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let v of vehiculosDentro">
+          <td><span class="badge-placa">{{ v.placa }}</span></td>
+          <td><span class="badge" [ngClass]="{
+              'accent': v.tipoCliente==='visitante', 'brand': v.tipoCliente!=='visitante'
+          }">{{ v.tipoCliente }}</span></td>
+          <td>{{ v.tipoVehiculo }}</td>
+          <td>{{ v.entrada }}</td>
+          <td>{{ v.tarifaHora | currency:'COP':'symbol-narrow':'1.0-0' }}</td>
+          <td>{{ v.horas }}</td>
+          <td><strong>{{ (v.tarifaHora * v.horas) | currency:'COP':'symbol-narrow':'1.0-0' }}</strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Movimientos de hoy (salidos) -->
+  <div class="content-card" *ngIf="parqueadero.length > 0; else noData" style="margin-top:1.5rem;">
+    <h3 style="margin:0; padding:1rem 1.25rem; border-bottom: 1px solid var(--neutral-200, #e2e8f0);">Movimientos de hoy</h3>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Placa</th>
+          <th>Cliente</th>
+          <th>Vehículo</th>
+          <th>Entrada</th>
+          <th>Salida</th>
+          <th>Tarifa/Hora</th>
+          <th>Horas</th>
+          <th>Monto</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let v of parqueadero">
+          <td><span class="badge-placa">{{ v.placa }}</span></td>
+          <td><span class="badge" [ngClass]="{
+              'accent': v.tipoCliente==='visitante', 'brand': v.tipoCliente!=='visitante'
+          }">{{ v.tipoCliente }}</span></td>
+          <td>{{ v.tipoVehiculo }}</td>
+          <td>{{ v.entrada }}</td>
+          <td>{{ v.salida }}</td>
+          <td>{{ v.tarifaHora | currency:'COP':'symbol-narrow':'1.0-0' }}</td>
+          <td>{{ v.horas }}</td>
+          <td><strong>{{ v.monto | currency:'COP':'symbol-narrow':'1.0-0' }}</strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <ng-template #noData>
+    <div class="empty-state">
+      <div class="empty-icon">🚙</div>
+      <h3>No hay vehículos registrados</h3>
+      <p>No hay vehículos en el parqueadero actualmente</p>
+    </div>
+  </ng-template>
+</div>

@@ -1,0 +1,65 @@
+.badge-success {
+  background: var(--brand-600, #16a34a);
+  color: #ffffff;
+	padding: 0.25rem 0.75rem;
+	border-radius: 12px;
+	font-size: 0.875rem;
+	font-weight: 600;
+}
+
+.badge-warning {
+		background: var(--accent-500, #f59e0b);
+		color: #111827; /* gray-900 for contrast */
+	padding: 0.25rem 0.75rem;
+	border-radius: 12px;
+	font-size: 0.875rem;
+	font-weight: 600;
+}
+
+.ref-code {
+	background: #edf2f7;
+	color: #2d3748;
+	padding: 0.25rem 0.5rem;
+	border-radius: 4px;
+	font-family: 'Courier New', monospace;
+	font-size: 0.8rem;
+	font-weight: 600;
+}
+
+.badge-tipo {
+		background: #0ea5a4; /* teal-ish */
+		color: #062a2a;
+	padding: 0.25rem 0.75rem;
+	border-radius: 12px;
+	font-size: 0.75rem;
+	font-weight: 600;
+	text-transform: uppercase;
+}
+
+/* Actions and modal */
+.btn-outline {
+	background: transparent;
+	color: var(--brand-700, #15803d);
+	border: 1px solid var(--brand-600, #16a34a);
+	padding: 0.375rem 0.75rem;
+	border-radius: 8px;
+	font-weight: 600;
+	cursor: pointer;
+}
+.btn-outline:hover { background: var(--brand-100, #dcfce7); }
+
+.modal-backdrop {
+	position: fixed; inset: 0; background: rgba(0,0,0,0.35);
+}
+.modal {
+	position: fixed; left: 50%; top: 15%; transform: translateX(-50%);
+	width: min(560px, 92vw); background: #ffffff; border-radius: 12px;
+	box-shadow: 0 10px 30px rgba(0,0,0,0.2); overflow: hidden;
+}
+.modal-header { display:flex; align-items:center; justify-content:space-between; padding: 1rem 1.25rem; border-bottom: 1px solid #e5e7eb; }
+.modal-body { padding: 1rem 1.25rem; }
+.modal-footer { display:flex; gap:.5rem; justify-content:flex-end; padding: 0.75rem 1.25rem; border-top: 1px solid #e5e7eb; }
+.btn { background:#e5e7eb; color:#111827; border:none; border-radius:8px; padding:.5rem .9rem; font-weight:700; cursor:pointer; }
+.btn-primary { background: var(--brand-600, #16a34a); color:#fff; }
+.btn-icon { background:transparent; border:none; font-size:1rem; cursor:pointer; color:#6b7280; }
+.factura { display:grid; grid-template-columns: 1fr 1fr; gap:.5rem 1rem; }
