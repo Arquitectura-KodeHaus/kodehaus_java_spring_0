@@ -78,13 +78,13 @@ jobs:
             --allow-unauthenticated \
             --service-account "run-backend-sa@${{ env.PROJECT_ID }}.iam.gserviceaccount.com" \
             --add-cloudsql-instances "kodehaus-prod-474304:us-central1:pg-prod" \
-            --memory 1Gi \
-            --cpu 1 \
+            --memory 2Gi \
+            --cpu 2 \
             --min-instances 0 \
             --max-instances 10 \
-            --timeout 300 \
-            --set-env-vars "SPRING_PROFILES_ACTIVE=prod" \
-            --set-secrets "SPRING_DATASOURCE_URL=DB_URL:latest,SPRING_DATASOURCE_USERNAME=DB_USERNAME:latest,SPRING_DATASOURCE_PASSWORD=DB_PASSWORD:latest"
+            --timeout 600 \
+            --port 8080 \
+            --set-env-vars "SPRING_DATASOURCE_DB=postgres,SPRING_DATASOURCE_USERNAME=postgres,SPRING_DATASOURCE_PASSWORD=Pr0d-ChangeMe!"
 
       - name: Verify deployment
         working-directory: .
@@ -96,16 +96,18 @@ jobs:
           echo "🌐 Backend URL: ${SERVICE_URL}"
           
           # Esperar que el servicio esté listo
-          sleep 15
+          echo "⏳ Esperando 45 segundos para que el servicio inicie..."
+          sleep 45
           
-          # Health check (ajusta el endpoint según tu API)
+          # Health check
+          echo "🔍 Verificando health check..."
           HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${SERVICE_URL}/actuator/health" || echo "000")
           
           if [ "$HTTP_CODE" -eq 200 ]; then
             echo "✅ Backend health check passed!"
           else
             echo "⚠️ Health check returned HTTP ${HTTP_CODE}"
-            echo "Service might still be starting up..."
+            echo "📊 Check logs at: https://console.cloud.google.com/run/detail/${{ env.REGION }}/${{ env.SERVICE }}/logs"
           fi
 
       - name: Display deployment info
@@ -122,5 +124,10 @@ jobs:
           echo ""
           echo "🌐 Backend URL: ${SERVICE_URL}"
           echo "📦 Image: ${IMAGE_URI_DIGEST}"
-          echo "🗄️ Database: kodehaus-prod-474304:us-central1:pg-prod"
+          echo "🗄️ Database: postgres@kodehaus-prod-474304:us-central1:pg-prod"
+          echo "📊 Logs: https://console.cloud.google.com/run/detail/${{ env.REGION }}/${{ env.SERVICE }}/logs"
+          echo ""
+          echo "🔗 Test endpoints:"
+          echo "   Health: ${SERVICE_URL}/actuator/health"
+          echo "   Login:  ${SERVICE_URL}/api/auth/login"
           echo ""
