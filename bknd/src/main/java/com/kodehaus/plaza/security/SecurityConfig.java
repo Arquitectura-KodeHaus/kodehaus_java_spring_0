@@ -30,8 +30,8 @@ public class SecurityConfig {
     
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     
-    // ✅ Añadir variable de entorno para orígenes permitidos
-    @Value("${cors.allowed-origins:https://frontend-service-java-2-729022607150.us-central1.run.app,http://localhost:4200}")
+    // ✅ Actualizar con TODAS las URLs posibles del frontend
+    @Value("${cors.allowed-origins:https://frontend-service-java-2-ui5jfxgyya-uc.a.run.app,https://frontend-service-java-2-729022607150.us-central1.run.app,http://localhost:4200}")
     private String allowedOrigins;
     
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
@@ -83,7 +83,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         
-        // ✅ Usar lista específica de orígenes en lugar de wildcard
+        // ✅ Permitir ambas URLs del frontend + localhost
         List<String> origins = Arrays.asList(allowedOrigins.split(","));
         configuration.setAllowedOrigins(origins);
         
@@ -92,7 +92,7 @@ public class SecurityConfig {
             "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
         ));
         
-        // ✅ Headers permitidos (específicos para mejor seguridad)
+        // ✅ Headers permitidos
         configuration.setAllowedHeaders(Arrays.asList(
             "Authorization",
             "Content-Type",
@@ -111,10 +111,10 @@ public class SecurityConfig {
             "X-Total-Count"
         ));
         
-        // ✅ Permitir credenciales (cookies, authorization headers)
+        // ✅ Permitir credenciales
         configuration.setAllowCredentials(true);
         
-        // ✅ Cache de preflight requests (1 hora)
+        // ✅ Cache de preflight
         configuration.setMaxAge(3600L);
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
