@@ -52,29 +52,29 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Google Cloud SQL Socket Factory - REQUERIDO para Cloud Run -->
+        <!-- Google Cloud SQL Socket Factory -->
         <dependency>
             <groupId>com.google.cloud.sql</groupId>
             <artifactId>postgres-socket-factory</artifactId>
             <version>1.18.1</version>
         </dependency>
 
-        <!-- JWT Dependencies -->
+        <!-- JWT Dependencies - VERSIÓN 0.12.6 -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-api</artifactId>
-            <version>0.11.5</version>
+            <version>0.12.6</version>
         </dependency>
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-impl</artifactId>
-            <version>0.11.5</version>
+            <version>0.12.6</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-jackson</artifactId>
-            <version>0.11.5</version>
+            <version>0.12.6</version>
             <scope>runtime</scope>
         </dependency>
 
