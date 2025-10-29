@@ -6,7 +6,6 @@ import com.kodehaus.plaza.entity.User;
 import com.kodehaus.plaza.security.JwtTokenProvider;
 import com.kodehaus.plaza.service.CustomUserDetailsService;
 import jakarta.validation.Valid;
-// Lombok annotations removed for compatibility
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -79,8 +78,16 @@ public class AuthController {
         response.setFirstName(user.getFirstName());
         response.setLastName(user.getLastName());
         response.setFullName(user.getFullName());
-        response.setPlazaId(user.getPlaza().getId());
-        response.setPlazaName(user.getPlaza().getName());
+        
+        // ✅ VERIFICAR SI PLAZA EXISTE
+        if (user.getPlaza() != null) {
+            response.setPlazaId(user.getPlaza().getId());
+            response.setPlazaName(user.getPlaza().getName());
+        } else {
+            response.setPlazaId(null);  // ✅ O un valor por defecto
+            response.setPlazaName("Sin plaza asignada");
+        }
+        
         response.setRoles(user.getRoles().stream()
             .map(role -> role.getName())
             .collect(Collectors.toSet()));
@@ -98,7 +105,6 @@ public class AuthController {
     public ResponseEntity<LoginResponseDto> getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         
-        // Get username and load user from database
         String username = authentication.getName();
         User user = (User) userDetailsService.loadUserByUsername(username);
         
@@ -109,8 +115,16 @@ public class AuthController {
         response.setFirstName(user.getFirstName());
         response.setLastName(user.getLastName());
         response.setFullName(user.getFullName());
-        response.setPlazaId(user.getPlaza().getId());
-        response.setPlazaName(user.getPlaza().getName());
+        
+        // ✅ VERIFICAR SI PLAZA EXISTE
+        if (user.getPlaza() != null) {
+            response.setPlazaId(user.getPlaza().getId());
+            response.setPlazaName(user.getPlaza().getName());
+        } else {
+            response.setPlazaId(null);
+            response.setPlazaName("Sin plaza asignada");
+        }
+        
         response.setRoles(user.getRoles().stream()
             .map(role -> role.getName())
             .collect(Collectors.toSet()));
