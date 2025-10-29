@@ -1,4 +1,4 @@
-package com.kodehaus.plaza.config;
+package com.kodehaus.plaza.security;
 
 import com.kodehaus.plaza.security.JwtAuthenticationEntryPoint;
 import com.kodehaus.plaza.security.JwtAuthenticationFilter;
