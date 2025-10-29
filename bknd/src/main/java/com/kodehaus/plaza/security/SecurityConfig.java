@@ -17,6 +17,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -27,7 +28,7 @@ import java.util.List;
 @Slf4j
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -41,14 +42,13 @@ public class SecurityConfig {
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(AbstractHttpConfigurer::disable)
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
             .authorizeHttpRequests(auth -> {
                 log.info("✅ Configuring permitAll for /api/auth/**");
                 auth
+                    // ✅ Endpoints públicos (sin autenticación)
                     .requestMatchers(
                         "/api/auth/**",
+                        "/api/managers/register",
                         "/actuator/**",
                         "/v3/api-docs/**",
                         "/swagger-ui/**",
@@ -57,7 +57,7 @@ public class SecurityConfig {
                         "/error"
                     ).permitAll()
                     
-                    // Protected endpoints
+                    // ✅ Endpoints protegidos con roles específicos
                     .requestMatchers("/api/users/**").hasAnyRole("MANAGER", "ADMIN")
                     .requestMatchers("/api/roles/**").hasAnyRole("MANAGER", "ADMIN")
                     .requestMatchers("/api/permissions/**").hasAnyRole("MANAGER", "ADMIN")
@@ -65,13 +65,18 @@ public class SecurityConfig {
                     .requestMatchers("/api/plazas/**").hasAnyRole("MANAGER", "ADMIN")
                     .requestMatchers("/api/products/**").hasAnyRole("MANAGER", "ADMIN", "EMPLOYEE_GENERAL")
                     
+                    // ✅ Cualquier otro endpoint requiere autenticación
                     .anyRequest().authenticated();
             })
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            )
             .authenticationProvider(authenticationProvider())
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
-        http.headers(headers -> headers.frameOptions(f -> f.disable()));
-        
+        // ✅ Permitir frames de H2 Console (solo desarrollo)
+        http.headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()));
+
         log.info("✅ SecurityFilterChain configured successfully");
         return http.build();
     }
@@ -80,10 +85,28 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         log.info("🌐 Configuring CORS");
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(List.of("*"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        
+        // ✅ Permitir orígenes de Cloud Run y localhost
+        configuration.setAllowedOriginPatterns(Arrays.asList(
+            "https://*.run.app",
+            "https://*.a.run.app",
+            "http://localhost:*",
+            "http://127.0.0.1:*"
+        ));
+        
+        configuration.setAllowedMethods(Arrays.asList(
+            "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
+        ));
+        
         configuration.setAllowedHeaders(List.of("*"));
-        configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
+        
+        configuration.setExposedHeaders(Arrays.asList(
+            "Authorization",
+            "Content-Type",
+            "Content-Length",
+            "X-Total-Count"
+        ));
+        
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
 
