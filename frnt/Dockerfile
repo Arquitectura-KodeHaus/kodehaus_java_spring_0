@@ -22,17 +22,21 @@ RUN npm run build
 # Production stage
 FROM nginx:alpine
 
-# Copy built files to nginx
-COPY --from=build /app/dist /usr/share/nginx/html
+# Copy nginx configuration (main config, not conf.d)
+COPY nginx.conf /etc/nginx/nginx.conf
 
-# Copy nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Copy built files to nginx (Angular build outputs to dist/frnt/browser)
+COPY --from=build /app/dist/frnt/browser /usr/share/nginx/html
 
-# Health check endpoint
+# Create health check endpoint
 RUN echo '{"status":"ok"}' > /usr/share/nginx/html/health
 
 # Expose port
 EXPOSE 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1
 
 # Start nginx
 CMD ["nginx", "-g", "daemon off;"]
