@@ -67,15 +67,6 @@ jobs:
           DIGEST=$(gcloud artifacts docker images describe "$IMAGE_URI" --format='value(image_summary.digest)')
           echo "IMAGE_URI_DIGEST=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/${{ env.IMAGE_NAME }}@${DIGEST}" >> $GITHUB_ENV
 
-      - name: Clean up existing service (if conflicts exist)
-        working-directory: .
-        continue-on-error: true
-        run: |
-          echo "🧹 Checking if service needs cleanup..."
-          gcloud run services delete "${{ env.SERVICE }}" \
-            --region "${{ env.REGION }}" \
-            --quiet || echo "Service doesn't exist or already clean"
-
       - name: Deploy to Cloud Run
         working-directory: .
         run: |
@@ -92,9 +83,7 @@ jobs:
             --max-instances 10 \
             --timeout 600 \
             --port 8080 \
-            --startup-cpu-boost \
-            --cpu-throttling \
-            --no-cpu-throttling \
+            --cpu-boost \
             --set-env-vars "SPRING_DATASOURCE_DB=postgres,SPRING_DATASOURCE_USERNAME=postgres,SPRING_DATASOURCE_PASSWORD=Pr0d-ChangeMe!,JWT_SECRET=mySecretKeyForJWTTokenGenerationAndValidationMustBeAtLeast512BitsLong12345678901234567890"
 
       - name: Verify deployment
@@ -106,9 +95,8 @@ jobs:
           
           echo "🌐 Backend URL: ${SERVICE_URL}"
           
-          # Esperar que el servicio esté listo
-          echo "⏳ Esperando 45 segundos para que el servicio inicie..."
-          sleep 45
+          echo "⏳ Esperando 60 segundos para que el servicio inicie completamente..."
+          sleep 60
           
           echo "🔍 Verificando health check..."
           for i in {1..10}; do
@@ -127,7 +115,7 @@ jobs:
           done
           
           echo "❌ Health check failed after 10 attempts"
-          echo "📊 Check logs at: https://console.cloud.google.com/run/detail/${{ env.REGION }}/${{ env.SERVICE }}/logs"
+          echo "📊 Logs: https://console.cloud.google.com/run/detail/${{ env.REGION }}/${{ env.SERVICE }}/logs"
           exit 1
 
       - name: Display deployment info
