@@ -3,10 +3,8 @@ package com.kodehaus.plaza.service;
 import com.kodehaus.plaza.entity.*;
 import com.kodehaus.plaza.repository.*;
 import java.math.BigDecimal;
-// Lombok annotations removed for compatibility
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -16,7 +14,6 @@ import java.util.Set;
 /**
  * Data initialization service for creating seed data
  */
-@Service
 public class DataInitializationService implements CommandLineRunner {
     
     private final PlazaRepository plazaRepository;
