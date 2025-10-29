@@ -1,6 +1,5 @@
 package com.kodehaus.plaza.security;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,7 +17,6 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * Security configuration for JWT authentication
@@ -29,10 +27,6 @@ import java.util.List;
 public class SecurityConfig {
     
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    
-    // ✅ Actualizar con TODAS las URLs posibles del frontend
-    @Value("${cors.allowed-origins:https://frontend-service-java-2-ui5jfxgyya-uc.a.run.app,https://frontend-service-java-2-729022607150.us-central1.run.app,http://localhost:4200}")
-    private String allowedOrigins;
     
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
@@ -83,9 +77,13 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         
-        // ✅ Permitir ambas URLs del frontend + localhost
-        List<String> origins = Arrays.asList(allowedOrigins.split(","));
-        configuration.setAllowedOrigins(origins);
+        // ✅ Usar allowedOriginPatterns para permitir cualquier subdominio de Cloud Run
+        configuration.setAllowedOriginPatterns(Arrays.asList(
+            "https://*.run.app",           // Cualquier Cloud Run
+            "https://*.a.run.app",         // Cloud Run con subdominio a
+            "http://localhost:*",          // Localhost en cualquier puerto
+            "http://127.0.0.1:*"           // 127.0.0.1 en cualquier puerto
+        ));
         
         // ✅ Métodos HTTP permitidos
         configuration.setAllowedMethods(Arrays.asList(
