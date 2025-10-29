@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { jwtDecode } from 'jwt-decode';
+import { environment } from '../../environments/environment.prod';
 
 /**
  * Interfaz para la respuesta del login del backend
@@ -52,12 +53,13 @@ export interface User {
 export class AuthService {
   private readonly TOKEN_KEY = 'auth_token';
   private readonly USER_KEY = 'auth_user';
-  private readonly API_URL = 'http://localhost:8081/api';
+  private readonly API_URL = environment.apiUrl; // ✅ Usar environment
 
   private userSubject = new BehaviorSubject<User | null>(null);
   public user$ = this.userSubject.asObservable();
 
   constructor(private http: HttpClient, private router: Router) {
+    console.log('🔐 AuthService initialized with API_URL:', this.API_URL);
     this.loadUserFromStorage();
   }
 
@@ -68,10 +70,14 @@ export class AuthService {
    * @returns Observable con la respuesta del login
    */
   login(username: string, password: string): Observable<LoginResponse> {
+    console.log('🔐 Login attempt:', { username, apiUrl: `${this.API_URL}/auth/login` });
+    
     return this.http
       .post<LoginResponse>(`${this.API_URL}/auth/login`, { username, password })
       .pipe(
         tap((response) => {
+          console.log('✅ Login successful:', response);
+          
           // Guardar token y usuario en localStorage
           localStorage.setItem(this.TOKEN_KEY, response.accessToken);
           localStorage.setItem(this.USER_KEY, JSON.stringify(response));
@@ -93,7 +99,7 @@ export class AuthService {
           this.userSubject.next(user);
         }),
         catchError((error) => {
-          console.error('Error en login:', error);
+          console.error('❌ Error en login:', error);
           return throwError(() => error);
         })
       );
@@ -103,6 +109,7 @@ export class AuthService {
    * Cierra sesión y limpia el storage
    */
   logout(): void {
+    console.log('🚪 Logging out...');
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
     this.userSubject.next(null);

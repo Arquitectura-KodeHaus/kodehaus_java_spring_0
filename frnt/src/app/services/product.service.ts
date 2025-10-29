@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../environments/environment';
+import { environment } from '../../environments/environment.prod';
 
 export interface ProductRequest {
   name: string;
@@ -31,9 +31,11 @@ export interface ProductResponse {
   providedIn: 'root'
 })
 export class ProductService {
-  private readonly API_URL = `${environment.apiUrl}/api/products`;
+  private readonly API_URL = `${environment.apiUrl}/products`; // ✅ Usar environment
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    console.log('📦 ProductService initialized with API_URL:', this.API_URL);
+  }
 
   /**
    * Obtiene todos los productos

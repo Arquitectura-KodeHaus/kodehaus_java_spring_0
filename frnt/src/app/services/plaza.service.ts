@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment.prod';
 
 export interface PlazaDto {
   id?: number;
@@ -16,40 +17,41 @@ export interface PlazaDto {
 
 @Injectable({ providedIn: 'root' })
 export class PlazaService {
-  // Backend corre en 8081 según application.properties
-  private apiUrl = 'http://localhost:8081/api';
+  private readonly API_URL = environment.apiUrl; // ✅ Usar environment
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    console.log('🏢 PlazaService initialized with API_URL:', this.API_URL);
+  }
 
   getPlazas(): Observable<PlazaDto[]> {
-    return this.http.get<PlazaDto[]>(`${this.apiUrl}/plazas`);
+    return this.http.get<PlazaDto[]>(`${this.API_URL}/plazas`);
   }
 
   getPlaza(id: number): Observable<PlazaDto> {
-    return this.http.get<PlazaDto>(`${this.apiUrl}/plazas/${id}`);
+    return this.http.get<PlazaDto>(`${this.API_URL}/plazas/${id}`);
   }
 
   createPlaza(plaza: PlazaDto): Observable<PlazaDto> {
-    return this.http.post<PlazaDto>(`${this.apiUrl}/plazas`, plaza);
+    return this.http.post<PlazaDto>(`${this.API_URL}/plazas`, plaza);
   }
 
   updatePlaza(id: number, plaza: PlazaDto): Observable<PlazaDto> {
-    return this.http.put<PlazaDto>(`${this.apiUrl}/plazas/${id}`, plaza);
+    return this.http.put<PlazaDto>(`${this.API_URL}/plazas/${id}`, plaza);
   }
 
   getBoletin(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/boletin`);
+    return this.http.get<any[]>(`${this.API_URL}/boletin`);
   }
 
   getLocales(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/locales`);
+    return this.http.get<any[]>(`${this.API_URL}/locales`);
   }
 
   getPagos(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/pagos`);
+    return this.http.get<any[]>(`${this.API_URL}/pagos`);
   }
 
   getParqueadero(): Observable<any[]> {
-    return this.http.get<any[]>((`${this.apiUrl}/parqueadero`));
+    return this.http.get<any[]>(`${this.API_URL}/parqueadero`);
   }
 }
