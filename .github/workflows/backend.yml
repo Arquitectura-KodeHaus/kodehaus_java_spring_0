@@ -68,6 +68,15 @@ jobs:
           DIGEST=$(gcloud artifacts docker images describe "$IMAGE_URI" --format='value(image_summary.digest)')
           echo "IMAGE_URI_DIGEST=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/${{ env.IMAGE_NAME }}@${DIGEST}" >> $GITHUB_ENV
 
+      - name: Clean up existing service (if conflicts exist)
+        working-directory: .
+        continue-on-error: true
+        run: |
+          echo "🧹 Checking if service needs cleanup..."
+          gcloud run services delete "${{ env.SERVICE }}" \
+            --region "${{ env.REGION }}" \
+            --quiet || echo "Service doesn't exist or already clean"
+
       - name: Deploy to Cloud Run
         working-directory: .
         run: |
