@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Repository interface for Plaza entity
@@ -46,4 +47,14 @@ public interface PlazaRepository extends JpaRepository<Plaza, Long> {
      */
     @Query("SELECT COUNT(p) > 0 FROM Plaza p WHERE p.id = :id AND p.isActive = true")
     boolean existsByIdAndIsActiveTrue(@Param("id") Long id);
+
+    /**
+     * Find plaza by external id (provided by external system)
+     */
+    Optional<Plaza> findByExternalId(String externalId);
+
+    /**
+     * Find plaza by UUID
+     */
+    Optional<Plaza> findByUuid(UUID uuid);
 }

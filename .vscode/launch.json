@@ -9,6 +9,16 @@
             "projectName": "stocks-backend",
             "args": "",
             "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-BkndApplication<bknd>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.kodehaus.bknd.BkndApplication",
+            "projectName": "bknd",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
         }
     ]
 }

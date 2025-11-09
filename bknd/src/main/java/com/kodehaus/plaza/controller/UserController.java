@@ -121,6 +121,71 @@ public class UserController {
         User savedUser = userRepository.save(user);
         return ResponseEntity.status(HttpStatus.CREATED).body(convertToResponseDto(savedUser));
     }
+
+    /**
+     * Endpoint used by the external system to create manager accounts associated to a plaza.
+     * Expects externalId, nombre, email, rol, plazaExternalId
+     */
+    @PostMapping("/externo")
+    public ResponseEntity<UserResponseDto> createUserFromExternal(@RequestBody ExternalUserRequest req) {
+        if (req.getExternalId() == null || req.getExternalId().isBlank() || req.getPlazaExternalId() == null
+            || req.getPlazaExternalId().isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        // Find plaza by external id
+        com.kodehaus.plaza.entity.Plaza plaza = plazaRepository.findByExternalId(req.getPlazaExternalId()).orElse(null);
+        if (plaza == null) return ResponseEntity.badRequest().build();
+
+        // If a user with this external id already exists, return it
+        userRepository.findByExternalId(req.getExternalId()).ifPresent(existing -> {
+            // nothing - we'll return below
+        });
+
+        if (userRepository.findByExternalId(req.getExternalId()).isPresent()) {
+            User existing = userRepository.findByExternalId(req.getExternalId()).get();
+            return ResponseEntity.ok(convertToResponseDto(existing));
+        }
+
+        // Create username from email (before @) or use externalId
+        String username = req.getEmail() != null && req.getEmail().contains("@") ? req.getEmail().split("@")[0] : req.getExternalId();
+        if (userRepository.existsByUsername(username)) {
+            username = username + "_" + java.util.UUID.randomUUID().toString().substring(0,6);
+        }
+
+        // generate random password for external accounts
+        String rawPassword = java.util.UUID.randomUUID().toString();
+
+        User user = new User();
+        user.setExternalId(req.getExternalId());
+        user.setUsername(username);
+        user.setEmail(req.getEmail());
+        user.setPassword(passwordEncoder.encode(rawPassword));
+
+        // split nombre into first and last
+        if (req.getNombre() != null && !req.getNombre().isBlank()) {
+            String[] parts = req.getNombre().trim().split(" ");
+            user.setFirstName(parts[0]);
+            if (parts.length > 1) user.setLastName(String.join(" ", java.util.Arrays.copyOfRange(parts,1,parts.length)));
+            else user.setLastName(" ");
+        } else {
+            user.setFirstName("External");
+            user.setLastName("User");
+        }
+
+        user.setPhoneNumber(req.getPhoneNumber());
+        user.setPlaza(plaza);
+
+        // assign role if exists
+        if (req.getRol() != null && !req.getRol().isBlank()) {
+            roleRepository.findByName(req.getRol()).ifPresent(role -> user.setRoles(java.util.Set.of(role)));
+        }
+
+        User saved = userRepository.save(user);
+
+        // Return created user info (do not expose password)
+        return ResponseEntity.status(org.springframework.http.HttpStatus.CREATED).body(convertToResponseDto(saved));
+    }
     
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
@@ -208,5 +273,28 @@ public class UserController {
         }
         
         return dto;
+    }
+
+    // DTO for external user creation
+    public static class ExternalUserRequest {
+        private String externalId;
+        private String nombre;
+        private String email;
+        private String rol;
+        private String plazaExternalId;
+        private String phoneNumber;
+
+        public String getExternalId() { return externalId; }
+        public void setExternalId(String externalId) { this.externalId = externalId; }
+        public String getNombre() { return nombre; }
+        public void setNombre(String nombre) { this.nombre = nombre; }
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+        public String getRol() { return rol; }
+        public void setRol(String rol) { this.rol = rol; }
+        public String getPlazaExternalId() { return plazaExternalId; }
+        public void setPlazaExternalId(String plazaExternalId) { this.plazaExternalId = plazaExternalId; }
+        public String getPhoneNumber() { return phoneNumber; }
+        public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
     }
 }

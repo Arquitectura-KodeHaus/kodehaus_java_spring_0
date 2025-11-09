@@ -26,6 +26,10 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
+    // External identifier provided by the external system (optional)
+    @Column(name = "external_id", unique = true)
+    private String externalId;
+    
     @NotBlank(message = "Username is required")
     @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
     @Column(unique = true, nullable = false)
@@ -141,6 +145,9 @@ public class User implements UserDetails {
     // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+    
+    public String getExternalId() { return externalId; }
+    public void setExternalId(String externalId) { this.externalId = externalId; }
     
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }

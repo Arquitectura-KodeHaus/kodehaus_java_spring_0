@@ -27,11 +27,14 @@ public class SecurityConfig {
 
     private final JwtAuthenticationEntryPoint unauthorizedHandler;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final com.kodehaus.plaza.security.ExternalApiKeyFilter externalApiKeyFilter;
 
     public SecurityConfig(JwtAuthenticationEntryPoint unauthorizedHandler,
-                         JwtAuthenticationFilter jwtAuthenticationFilter) {
+                         JwtAuthenticationFilter jwtAuthenticationFilter,
+                         com.kodehaus.plaza.security.ExternalApiKeyFilter externalApiKeyFilter) {
         this.unauthorizedHandler = unauthorizedHandler;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.externalApiKeyFilter = externalApiKeyFilter;
     }
 
     @Bean
@@ -46,10 +49,16 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
+                // external endpoints are permitted but protected by API key filter
+                .requestMatchers("/api/plazas/externo").permitAll()
+                .requestMatchers("/api/users/externo").permitAll()
                 .anyRequest().authenticated()
             );
 
-        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+    // Ensure external API key filter runs before JWT authentication
+    http.addFilterBefore(externalApiKeyFilter, UsernamePasswordAuthenticationFilter.class);
+    // Put JWT filter after the external API key filter
+    http.addFilterAfter(jwtAuthenticationFilter, com.kodehaus.plaza.security.ExternalApiKeyFilter.class);
 
         return http.build();
     }
