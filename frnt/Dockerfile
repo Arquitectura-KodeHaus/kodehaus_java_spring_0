@@ -16,8 +16,8 @@ COPY . .
 ARG BACKEND_URL
 ENV NG_APP_BACKEND_URL=${BACKEND_URL}
 
-# Build the application (Angular outputs to dist/frnt/browser by default)
-RUN npm run build
+# Build the application with production configuration
+RUN npm run build -- --configuration production
 
 # Production stage
 FROM nginx:alpine
