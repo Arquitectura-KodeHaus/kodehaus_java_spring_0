@@ -44,7 +44,9 @@ export class PlazaService {
   }
 
   getLocales(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.API_URL}/locales`);
+    // Use stores endpoint - the backend should handle /api/locales via StoreController
+    // For now, using /api/stores directly
+    return this.http.get<any[]>(`${this.API_URL}/stores`);
   }
 
   getPagos(): Observable<any[]> {

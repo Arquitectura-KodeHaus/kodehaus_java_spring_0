@@ -11,7 +11,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -78,6 +77,11 @@ public class User implements UserDetails {
         inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<Role> roles;
+    
+    // Relationship with Store (optional - for store owners)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_id")
+    private com.kodehaus.plaza.entity.Store store;
     
     // Constructors
     public User() {}
@@ -181,4 +185,7 @@ public class User implements UserDetails {
     
     public Set<Role> getRoles() { return roles; }
     public void setRoles(Set<Role> roles) { this.roles = roles; }
+    
+    public com.kodehaus.plaza.entity.Store getStore() { return store; }
+    public void setStore(com.kodehaus.plaza.entity.Store store) { this.store = store; }
 }

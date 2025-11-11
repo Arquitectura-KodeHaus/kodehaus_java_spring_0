@@ -1,10 +1,11 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Injector } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { jwtDecode } from 'jwt-decode';
 import { environment } from '../../environments/environment.prod';
+import { ModuleService } from './module.service';
 
 /**
  * Interfaz para la respuesta del login del backend
@@ -57,10 +58,25 @@ export class AuthService {
 
   private userSubject = new BehaviorSubject<User | null>(null);
   public user$ = this.userSubject.asObservable();
+  private moduleService: ModuleService | null = null;
 
-  constructor(private http: HttpClient, private router: Router) {
+  constructor(
+    private http: HttpClient, 
+    private router: Router,
+    private injector: Injector
+  ) {
     console.log('🔐 AuthService initialized with API_URL:', this.API_URL);
     this.loadUserFromStorage();
+  }
+  
+  /**
+   * Lazy load ModuleService to avoid circular dependency
+   */
+  private getModuleService(): ModuleService {
+    if (!this.moduleService) {
+      this.moduleService = this.injector.get(ModuleService);
+    }
+    return this.moduleService;
   }
 
   /**
@@ -97,12 +113,45 @@ export class AuthService {
           };
 
           this.userSubject.next(user);
+          
+          // Load modules after successful login (lazy load to avoid circular dependency)
+          setTimeout(() => {
+            this.loadModules();
+          }, 100);
         }),
         catchError((error) => {
           console.error('❌ Error en login:', error);
           return throwError(() => error);
         })
       );
+  }
+  
+  /**
+   * Load modules from the backend
+   */
+  private loadModules(): void {
+    try {
+      const moduleService = this.getModuleService();
+      moduleService.getModules().subscribe({
+        next: (modules: any) => {
+          if (modules && Array.isArray(modules)) {
+            console.log('✅ Modules loaded:', modules);
+            moduleService.setModules(modules);
+          } else {
+            console.log('⚠️ No modules received or invalid format, using empty array');
+            moduleService.setModules([]);
+          }
+        },
+        error: (error) => {
+          console.error('❌ Error loading modules:', error);
+          // Set empty modules array if error (will show all modules by default)
+          moduleService.setModules([]);
+        }
+      });
+    } catch (error) {
+      console.error('Error getting ModuleService:', error);
+      // Silently fail - modules are optional
+    }
   }
 
   /**

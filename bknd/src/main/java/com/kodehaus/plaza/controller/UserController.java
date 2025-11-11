@@ -256,6 +256,7 @@ public class UserController {
         dto.setPlazaId(user.getPlaza().getId());
         dto.setPlazaName(user.getPlaza().getName());
         dto.setFullName(user.getFullName());
+        dto.setExternalId(user.getExternalId());
         
         if (user.getRoles() != null) {
             dto.setRoles(user.getRoles().stream()

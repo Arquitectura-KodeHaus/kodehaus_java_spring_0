@@ -18,9 +18,12 @@ Endpoint para que el System Service registre nuevos managers en el Plaza Service
   "lastName": "Smith",
   "phoneNumber": "+1-555-0005",
   "plazaId": 1,
-  "roleIds": [1]
+  "roleIds": [1],
+  "externalId": "ext-manager-123"
 }
 ```
+
+**Nota:** El campo `externalId` es opcional. Si se proporciona, debe ser único.
 
 **Response (201 Created):**
 ```json
@@ -36,6 +39,7 @@ Endpoint para que el System Service registre nuevos managers en el Plaza Service
   "updatedAt": "2025-10-27T11:22:12.8054297",
   "plazaId": 1,
   "plazaName": "Centro Comercial Plaza Central",
+  "externalId": "ext-manager-123",
   "roles": [
     {
       "id": 1,
@@ -51,6 +55,7 @@ Endpoint para que el System Service registre nuevos managers en el Plaza Service
 **Errores posibles:**
 - `409 Conflict`: Username ya existe
 - `409 Conflict`: Email ya existe
+- `409 Conflict`: External ID ya existe
 - `400 Bad Request`: Plaza no encontrada
 - `400 Bad Request`: Plaza no está activa
 
