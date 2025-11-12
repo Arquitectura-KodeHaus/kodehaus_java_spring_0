@@ -20,19 +20,23 @@ export class ModuleService {
   constructor(private http: HttpClient) {}
 
   getModules(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.API_URL}/modulos`);
+    return this.http.get<any[]>(`${this.API_URL}/modules`);
   }
 
   /**
    * Map backend module response to ModuleDto
    */
   private mapToModuleDto(module: any): ModuleDto {
+    // Backend returns: {id: number, nombre: string, estado: string, descripcion: string}
+    const enabled = module.estado ? module.estado.toLowerCase() === 'activo' : true;
+    const moduleName = module.nombre || module.name || '';
+    
     return {
-      id: module.id || module.name || '',
-      name: module.name || '',
-      description: module.description || '',
-      enabled: module.enabled !== false, // Default to true if not specified
-      route: module.route || `/${(module.name || '').toLowerCase()}`,
+      id: String(module.id || ''),
+      name: moduleName,
+      description: module.descripcion || module.description || '',
+      enabled: enabled,
+      route: module.route || `/${moduleName.toLowerCase()}`,
       icon: module.icon || ''
     };
   }
