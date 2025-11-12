@@ -44,7 +44,7 @@ public class ExternalSystemService {
                 url = systemOwnerUrl + "/api/plazas/" + plazaExternalId + "/modules";
             } else {
                 // Fallback to getting all modules (simplified approach for stocks-backend)
-                url = systemOwnerUrl + "/api/modulo";
+                url = systemOwnerUrl + "/api/modulos";
             }
             
             HttpHeaders headers = new HttpHeaders();
