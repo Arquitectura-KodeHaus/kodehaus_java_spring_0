@@ -55,6 +55,9 @@ public class User implements UserDetails {
     @Column(name = "phone_number")
     private String phoneNumber;
     
+    @Column(name = "cedula")
+    private String cedula;
+    
     @Column(name = "is_active")
     private Boolean isActive = true;
     
@@ -170,6 +173,9 @@ public class User implements UserDetails {
     
     public String getPhoneNumber() { return phoneNumber; }
     public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
+    
+    public String getCedula() { return cedula; }
+    public void setCedula(String cedula) { this.cedula = cedula; }
     
     public Boolean getIsActive() { return isActive; }
     public void setIsActive(Boolean isActive) { this.isActive = isActive; }

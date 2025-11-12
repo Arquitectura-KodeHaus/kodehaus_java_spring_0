@@ -5,6 +5,7 @@ import com.kodehaus.plaza.repository.*;
 import java.math.BigDecimal;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -13,7 +14,9 @@ import java.util.Set;
 
 /**
  * Data initialization service for creating seed data
+ * NOTE: Disabled because data already exists in Cloud SQL
  */
+// @Component // Disabled - data already exists in production DB
 public class DataInitializationService implements CommandLineRunner {
     
     private final PlazaRepository plazaRepository;
