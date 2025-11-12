@@ -25,7 +25,6 @@ public class PlazaController {
     }
     
     @PostMapping
-    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
     public ResponseEntity<PlazaResponseDto> createPlaza(@RequestBody PlazaCreateRequest req) {
         // Validaciones simples
         if (req.getName() == null || req.getName().isBlank() ||
@@ -88,7 +87,6 @@ public class PlazaController {
     }
     
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
     public ResponseEntity<PlazaResponseDto> updatePlaza(@PathVariable Long id, @RequestBody PlazaUpdateRequest req) {
         return plazaRepository.findById(id)
             .filter(plaza -> plaza.getIsActive())
@@ -159,7 +157,6 @@ public class PlazaController {
     }
     
     @GetMapping
-    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
     public ResponseEntity<List<PlazaResponseDto>> getAllPlazas() {
         List<Plaza> plazas = plazaRepository.findByIsActiveTrue();
         
@@ -171,7 +168,6 @@ public class PlazaController {
     }
     
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
     public ResponseEntity<PlazaResponseDto> getPlazaById(@PathVariable Long id) {
         return plazaRepository.findById(id)
             .filter(plaza -> plaza.getIsActive())
@@ -180,7 +176,6 @@ public class PlazaController {
     }
     
     @GetMapping("/search")
-    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
     public ResponseEntity<List<PlazaResponseDto>> searchPlazas(@RequestParam String name) {
         List<Plaza> plazas = plazaRepository.findByNameContainingIgnoreCase(name);
         
