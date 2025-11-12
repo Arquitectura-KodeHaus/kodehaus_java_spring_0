@@ -31,15 +31,25 @@ public class ModuleController {
     @GetMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<Map<String, Object>>> getModules(Authentication authentication) {
-        User currentUser = (User) authentication.getPrincipal();
-        Plaza plaza = currentUser.getPlaza();
-        
-        if (plaza == null || plaza.getExternalId() == null) {
+        try {
+            if (authentication == null || authentication.getPrincipal() == null) {
+                return ResponseEntity.ok(List.of());
+            }
+            
+            User currentUser = (User) authentication.getPrincipal();
+            Plaza plaza = currentUser.getPlaza();
+            
+            if (plaza == null || plaza.getExternalId() == null || plaza.getExternalId().isBlank()) {
+                // Return empty list if plaza doesn't have external_id configured
+                return ResponseEntity.ok(List.of());
+            }
+            
+            ResponseEntity<List<Map<String, Object>>> response = externalSystemService.getPlazaModules(plaza.getExternalId());
+            return response;
+        } catch (Exception e) {
+            // Log error but return empty list to avoid breaking the frontend
             return ResponseEntity.ok(List.of());
         }
-        
-        ResponseEntity<List<Map<String, Object>>> response = externalSystemService.getPlazaModules(plaza.getExternalId());
-        return response;
     }
     
     /**
