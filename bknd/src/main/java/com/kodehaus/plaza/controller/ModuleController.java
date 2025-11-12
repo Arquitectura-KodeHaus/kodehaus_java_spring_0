@@ -15,7 +15,7 @@ import java.util.Map;
  * Module Controller for managing modules from external system
  */
 @RestController
-@RequestMapping("/api/modulos")
+@RequestMapping({"/api/modules", "/api/modulos"})
 @CrossOrigin(origins = "*")
 public class ModuleController {
 
