@@ -84,7 +84,7 @@ jobs:
             --timeout 300 \
             --port 8080 \
             --cpu-boost \
-            --set-env-vars "SPRING_DATASOURCE_DB=postgres,SPRING_DATASOURCE_USERNAME=postgres,SPRING_DATASOURCE_PASSWORD=Pr0d-ChangeMe!,JWT_SECRET=mySecretKeyForJWTTokenGenerationAndValidationMustBeAtLeast512BitsLong12345678901234567890"
+            --set-env-vars "SPRING_DATASOURCE_URL=jdbc:postgresql:///postgres?cloudSqlInstance=kodehaus-prod-474304:us-central1:pg-prod&socketFactory=com.google.cloud.sql.postgres.SocketFactory&user=postgres,SPRING_DATASOURCE_USERNAME=postgres,SPRING_DATASOURCE_PASSWORD=Pr0d-ChangeMe!,JWT_SECRET=mySecretKeyForJWTTokenGenerationAndValidationMustBeAtLeast512BitsLong12345678901234567890"
 
       - name: Verify & Display Info
         working-directory: .
