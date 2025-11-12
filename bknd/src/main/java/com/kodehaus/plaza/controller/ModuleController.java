@@ -27,26 +27,32 @@ public class ModuleController {
     
     /**
      * Get modules for the authenticated user's plaza
+     * Will attempt to get modules by plaza external_id if available,
+     * otherwise will get all available modules from the external system
      */
     @GetMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<Map<String, Object>>> getModules(Authentication authentication) {
         try {
             if (authentication == null || authentication.getPrincipal() == null) {
-                return ResponseEntity.ok(List.of());
+                // No authentication, try to get all modules anyway
+                ResponseEntity<List<Map<String, Object>>> response = externalSystemService.getPlazaModules(null);
+                return response;
             }
             
             User currentUser = (User) authentication.getPrincipal();
             Plaza plaza = currentUser.getPlaza();
             
-            if (plaza == null || plaza.getExternalId() == null || plaza.getExternalId().isBlank()) {
-                // Return empty list if plaza doesn't have external_id configured
-                return ResponseEntity.ok(List.of());
-            }
+            // Get external_id if available, otherwise pass null (will fetch all modules)
+            String externalId = (plaza != null && plaza.getExternalId() != null && !plaza.getExternalId().isBlank()) 
+                ? plaza.getExternalId() 
+                : null;
             
-            ResponseEntity<List<Map<String, Object>>> response = externalSystemService.getPlazaModules(plaza.getExternalId());
+            ResponseEntity<List<Map<String, Object>>> response = externalSystemService.getPlazaModules(externalId);
             return response;
         } catch (Exception e) {
+            System.err.println("Error in ModuleController.getModules: " + e.getMessage());
+            e.printStackTrace();
             // Log error but return empty list to avoid breaking the frontend
             return ResponseEntity.ok(List.of());
         }
