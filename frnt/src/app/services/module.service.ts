@@ -14,7 +14,7 @@ export interface ModuleDto {
 
 @Injectable({ providedIn: 'root' })
 export class ModuleService {
-  private readonly API_URL = 'https://stocks-backend-service-616328447495.us-central1.run.app/api/modulos';
+  private readonly API_URL = 'https://stocks-backend-service-616328447495.us-central1.run.app/api';
   private modules: ModuleDto[] = [];
 
   constructor(private http: HttpClient) {}
