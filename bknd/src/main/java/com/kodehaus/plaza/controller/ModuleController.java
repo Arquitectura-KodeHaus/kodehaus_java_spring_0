@@ -3,8 +3,8 @@ package com.kodehaus.plaza.controller;
 import com.kodehaus.plaza.entity.Plaza;
 import com.kodehaus.plaza.entity.User;
 import com.kodehaus.plaza.service.ExternalSystemService;
+import jakarta.annotation.security.PermitAll;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,42 +15,39 @@ import java.util.Map;
  * Module Controller for managing modules from external system
  */
 @RestController
-// Support both English and legacy Spanish paths
-@RequestMapping({"/api/modules", "/api/modulos"})
+@RequestMapping("/api/modulos")
 @CrossOrigin(origins = "*")
 public class ModuleController {
-    
+
     private final ExternalSystemService externalSystemService;
-    
+
     public ModuleController(ExternalSystemService externalSystemService) {
         this.externalSystemService = externalSystemService;
     }
-    
+
     /**
      * Get modules for the authenticated user's plaza
      * Will attempt to get modules by plaza external_id if available,
      * otherwise will get all available modules from the external system
      */
     @GetMapping
-    @PreAuthorize("isAuthenticated()")
+    @PermitAll
     public ResponseEntity<List<Map<String, Object>>> getModules(Authentication authentication) {
         try {
             if (authentication == null || authentication.getPrincipal() == null) {
                 // No authentication, try to get all modules anyway
-                ResponseEntity<List<Map<String, Object>>> response = externalSystemService.getPlazaModules(null);
-                return response;
+                return externalSystemService.getPlazaModules(null);
             }
-            
+
             User currentUser = (User) authentication.getPrincipal();
             Plaza plaza = currentUser.getPlaza();
-            
+
             // Get external_id if available, otherwise pass null (will fetch all modules)
-            String externalId = (plaza != null && plaza.getExternalId() != null && !plaza.getExternalId().isBlank()) 
-                ? plaza.getExternalId() 
-                : null;
-            
-            ResponseEntity<List<Map<String, Object>>> response = externalSystemService.getPlazaModules(externalId);
-            return response;
+            String externalId = (plaza != null && plaza.getExternalId() != null && !plaza.getExternalId().isBlank())
+                    ? plaza.getExternalId()
+                    : null;
+
+            return externalSystemService.getPlazaModules(externalId);
         } catch (Exception e) {
             System.err.println("Error in ModuleController.getModules: " + e.getMessage());
             e.printStackTrace();
@@ -58,15 +55,13 @@ public class ModuleController {
             return ResponseEntity.ok(List.of());
         }
     }
-    
+
     /**
      * Get modules for a specific plaza by external ID (for testing/admin purposes)
      */
     @GetMapping("/plaza/{plazaExternalId}")
-    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
+    @PermitAll
     public ResponseEntity<List<Map<String, Object>>> getModulesByPlazaExternalId(@PathVariable String plazaExternalId) {
-        ResponseEntity<List<Map<String, Object>>> response = externalSystemService.getPlazaModules(plazaExternalId);
-        return response;
+        return externalSystemService.getPlazaModules(plazaExternalId);
     }
 }
-
