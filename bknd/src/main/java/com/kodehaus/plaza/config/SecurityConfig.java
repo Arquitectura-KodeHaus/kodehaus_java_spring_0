@@ -2,6 +2,7 @@ package com.kodehaus.plaza.config;
 
 import com.kodehaus.plaza.security.JwtAuthenticationEntryPoint;
 import com.kodehaus.plaza.security.JwtAuthenticationFilter;
+import com.kodehaus.plaza.security.ExternalApiKeyFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -22,16 +23,16 @@ import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
+@EnableMethodSecurity(jsr250Enabled = true) // <--- habilita @PermitAll, @RolesAllowed, @DenyAll
 public class SecurityConfig {
 
     private final JwtAuthenticationEntryPoint unauthorizedHandler;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final com.kodehaus.plaza.security.ExternalApiKeyFilter externalApiKeyFilter;
+    private final ExternalApiKeyFilter externalApiKeyFilter;
 
     public SecurityConfig(JwtAuthenticationEntryPoint unauthorizedHandler,
-                         JwtAuthenticationFilter jwtAuthenticationFilter,
-                         com.kodehaus.plaza.security.ExternalApiKeyFilter externalApiKeyFilter) {
+                          JwtAuthenticationFilter jwtAuthenticationFilter,
+                          ExternalApiKeyFilter externalApiKeyFilter) {
         this.unauthorizedHandler = unauthorizedHandler;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.externalApiKeyFilter = externalApiKeyFilter;
@@ -42,23 +43,23 @@ public class SecurityConfig {
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
-            .exceptionHandling(exception -> exception
-                .authenticationEntryPoint(unauthorizedHandler))
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
+                // públicos
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
-                // external endpoints are permitted but protected by API key filter
                 .requestMatchers("/api/plazas/externo").permitAll()
                 .requestMatchers("/api/users/externo").permitAll()
+                // abrir explícitamente los módulos (redundante con @PermitAll, pero recomendado)
+                .requestMatchers("/api/modulos/**").permitAll()
+                // el resto autenticado
                 .anyRequest().authenticated()
             );
 
-    // Ensure external API key filter runs before JWT authentication
-    http.addFilterBefore(externalApiKeyFilter, UsernamePasswordAuthenticationFilter.class);
-    // Put JWT filter after the external API key filter
-    http.addFilterAfter(jwtAuthenticationFilter, com.kodehaus.plaza.security.ExternalApiKeyFilter.class);
+        // Orden de filtros: API Key antes de JWT; JWT antes de UsernamePasswordAuthenticationFilter no es necesario
+        http.addFilterBefore(externalApiKeyFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterAfter(jwtAuthenticationFilter, ExternalApiKeyFilter.class);
 
         return http.build();
     }
@@ -78,8 +79,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration cfg) throws Exception {
+        return cfg.getAuthenticationManager();
     }
 
     @Bean
