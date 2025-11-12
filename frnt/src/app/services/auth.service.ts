@@ -114,10 +114,10 @@ export class AuthService {
 
           this.userSubject.next(user);
           
-          // Load modules after successful login (lazy load to avoid circular dependency)
+          // Load modules after successful login with a longer delay to ensure token is saved
           setTimeout(() => {
             this.loadModules();
-          }, 100);
+          }, 500);
         }),
         catchError((error) => {
           console.error('❌ Error en login:', error);

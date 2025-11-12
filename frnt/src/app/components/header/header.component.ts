@@ -30,35 +30,21 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.userSubscription = this.authService.user$.subscribe((user) => {
       this.user = user;
       if (user) {
-        this.loadModules();
+        // Load modules from service (already loaded by AuthService after login)
+        this.loadModulesFromService();
       }
     });
     
     // Load modules if user is already logged in
     if (this.authService.isLoggedIn()) {
-      this.loadModules();
+      this.loadModulesFromService();
     }
   }
   
-  private loadModules(): void {
-    this.moduleService.getModules().subscribe({
-      next: (modules: any) => {
-        if (modules && Array.isArray(modules)) {
-          this.moduleService.setModules(modules);
-          this.availableModules = this.moduleService.getAvailableModules();
-        } else {
-          // If modules is not an array or empty, set empty array (backward compatibility - show all)
-          this.moduleService.setModules([]);
-          this.availableModules = [];
-        }
-      },
-      error: (error) => {
-        console.error('Error loading modules:', error);
-        this.availableModules = [];
-        // Set empty modules array to enable backward compatibility (show all modules)
-        this.moduleService.setModules([]);
-      }
-    });
+  private loadModulesFromService(): void {
+    // Don't call backend directly - modules are already loaded by AuthService
+    // Just get them from the service
+    this.availableModules = this.moduleService.getAvailableModules();
   }
   
   /**
