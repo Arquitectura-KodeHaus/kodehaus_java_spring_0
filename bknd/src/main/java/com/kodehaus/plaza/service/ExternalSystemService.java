@@ -33,12 +33,19 @@ public class ExternalSystemService {
     
     /**
      * Get modules for a plaza from the external system owner
-     * @param plazaExternalId External ID of the plaza
+     * @param plazaExternalId External ID of the plaza (can be null if getting all modules)
      * @return List of modules
      */
     public ResponseEntity<List<Map<String, Object>>> getPlazaModules(String plazaExternalId) {
         try {
-            String url = systemOwnerUrl + "/api/plazas/" + plazaExternalId + "/modules";
+            // Try to get modules by plaza first, if that fails or plazaExternalId is null, get all modules
+            String url;
+            if (plazaExternalId != null && !plazaExternalId.isBlank()) {
+                url = systemOwnerUrl + "/api/plazas/" + plazaExternalId + "/modules";
+            } else {
+                // Fallback to getting all modules (simplified approach for stocks-backend)
+                url = systemOwnerUrl + "/api/modulo";
+            }
             
             HttpHeaders headers = new HttpHeaders();
             headers.set("Content-Type", "application/json");
@@ -51,14 +58,19 @@ public class ExternalSystemService {
             org.springframework.core.ParameterizedTypeReference<List<Map<String, Object>>> responseType = 
                 new org.springframework.core.ParameterizedTypeReference<List<Map<String, Object>>>() {};
             
-            return restTemplate.exchange(url, HttpMethod.GET, request, responseType);
+            ResponseEntity<List<Map<String, Object>>> response = restTemplate.exchange(url, HttpMethod.GET, request, responseType);
+            
+            System.out.println("✅ Successfully fetched modules from: " + url);
+            return response;
         } catch (RestClientException e) {
             System.err.println("Error calling external system owner service: " + e.getMessage());
+            System.err.println("URL attempted: " + systemOwnerUrl);
             System.err.println("This is not critical - returning empty modules list. System will continue to work.");
             // Return empty list instead of throwing exception to avoid breaking the login flow
             return ResponseEntity.ok(List.of());
         } catch (Exception e) {
             System.err.println("Unexpected error calling external system owner service: " + e.getMessage());
+            e.printStackTrace();
             // Return empty list to avoid breaking the flow
             return ResponseEntity.ok(List.of());
         }
