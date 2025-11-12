@@ -20,7 +20,7 @@ export class ModuleService {
   constructor(private http: HttpClient) {}
 
   getModules(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.API_URL}/modules`);
+    return this.http.get<any[]>(`${this.API_URL}/modulos`);
   }
 
   /**
