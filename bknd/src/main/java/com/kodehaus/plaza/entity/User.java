@@ -11,7 +11,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -25,6 +24,10 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    
+    // External identifier provided by the external system (optional)
+    @Column(name = "external_id", unique = true)
+    private String externalId;
     
     @NotBlank(message = "Username is required")
     @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
@@ -74,6 +77,11 @@ public class User implements UserDetails {
         inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<Role> roles;
+    
+    // Relationship with Store (optional - for store owners)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_id")
+    private com.kodehaus.plaza.entity.Store store;
     
     // Constructors
     public User() {}
@@ -142,6 +150,9 @@ public class User implements UserDetails {
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     
+    public String getExternalId() { return externalId; }
+    public void setExternalId(String externalId) { this.externalId = externalId; }
+    
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
     
@@ -174,4 +185,7 @@ public class User implements UserDetails {
     
     public Set<Role> getRoles() { return roles; }
     public void setRoles(Set<Role> roles) { this.roles = roles; }
+    
+    public com.kodehaus.plaza.entity.Store getStore() { return store; }
+    public void setStore(com.kodehaus.plaza.entity.Store store) { this.store = store; }
 }

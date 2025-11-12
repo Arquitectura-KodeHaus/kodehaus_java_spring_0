@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService, User } from '../../services/auth.service';
+import { ModuleService, ModuleDto } from '../../services/module.service';
 import { Subscription } from 'rxjs';
 
 /**
@@ -16,15 +17,62 @@ import { Subscription } from 'rxjs';
 })
 export class HeaderComponent implements OnInit, OnDestroy {
   user: User | null = null;
+  availableModules: ModuleDto[] = [];
   private userSubscription!: Subscription;
 
-  constructor(public authService: AuthService) {}
+  constructor(
+    public authService: AuthService,
+    private moduleService: ModuleService
+  ) {}
 
   ngOnInit(): void {
     // Suscribirse a cambios en el usuario
     this.userSubscription = this.authService.user$.subscribe((user) => {
       this.user = user;
+      if (user) {
+        this.loadModules();
+      }
     });
+    
+    // Load modules if user is already logged in
+    if (this.authService.isLoggedIn()) {
+      this.loadModules();
+    }
+  }
+  
+  private loadModules(): void {
+    this.moduleService.getModules().subscribe({
+      next: (modules: any) => {
+        if (modules && Array.isArray(modules)) {
+          this.moduleService.setModules(modules);
+          this.availableModules = this.moduleService.getAvailableModules();
+        } else {
+          // If modules is not an array or empty, set empty array (backward compatibility - show all)
+          this.moduleService.setModules([]);
+          this.availableModules = [];
+        }
+      },
+      error: (error) => {
+        console.error('Error loading modules:', error);
+        this.availableModules = [];
+        // Set empty modules array to enable backward compatibility (show all modules)
+        this.moduleService.setModules([]);
+      }
+    });
+  }
+  
+  /**
+   * Check if a module is available
+   */
+  hasModule(moduleName: string): boolean {
+    return this.moduleService.hasModule(moduleName);
+  }
+  
+  /**
+   * Get module route
+   */
+  getModuleRoute(moduleName: string): string {
+    return this.moduleService.getModuleRoute(moduleName) || `/${moduleName.toLowerCase()}`;
   }
 
   ngOnDestroy(): void {

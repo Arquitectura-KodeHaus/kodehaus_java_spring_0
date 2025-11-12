@@ -22,13 +22,14 @@ public class UserResponseDto {
     private String plazaName;
     private Set<RoleResponseDto> roles;
     private String fullName;
+    private String externalId;
     
     // Constructors
     public UserResponseDto() {}
     
     public UserResponseDto(Long id, String username, String email, String firstName, String lastName,
                           String phoneNumber, Boolean isActive, LocalDateTime createdAt, LocalDateTime updatedAt,
-                          Long plazaId, String plazaName, Set<RoleResponseDto> roles, String fullName) {
+                          Long plazaId, String plazaName, Set<RoleResponseDto> roles, String fullName, String externalId) {
         this.id = id;
         this.username = username;
         this.email = email;
@@ -42,6 +43,7 @@ public class UserResponseDto {
         this.plazaName = plazaName;
         this.roles = roles;
         this.fullName = fullName;
+        this.externalId = externalId;
     }
     
     // Getters and Setters
@@ -83,4 +85,7 @@ public class UserResponseDto {
     
     public String getFullName() { return fullName; }
     public void setFullName(String fullName) { this.fullName = fullName; }
+    
+    public String getExternalId() { return externalId; }
+    public void setExternalId(String externalId) { this.externalId = externalId; }
 }

@@ -9,7 +9,6 @@ import com.kodehaus.plaza.entity.User;
 import com.kodehaus.plaza.repository.PlazaRepository;
 import com.kodehaus.plaza.repository.RoleRepository;
 import com.kodehaus.plaza.repository.UserRepository;
-import com.kodehaus.plaza.security.JwtTokenProvider;
 import jakarta.validation.Valid;
 // Lombok annotations removed for compatibility
 import org.springframework.http.HttpStatus;
@@ -45,16 +44,13 @@ public class ManagerController {
     private final RoleRepository roleRepository;
     private final PlazaRepository plazaRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtTokenProvider tokenProvider;
     
     public ManagerController(UserRepository userRepository, RoleRepository roleRepository,
-                           PlazaRepository plazaRepository, PasswordEncoder passwordEncoder,
-                           JwtTokenProvider tokenProvider) {
+                           PlazaRepository plazaRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.plazaRepository = plazaRepository;
         this.passwordEncoder = passwordEncoder;
-        this.tokenProvider = tokenProvider;
     }
     
     @PostMapping("/register")
@@ -69,6 +65,14 @@ public class ManagerController {
         if (userRepository.existsByEmail(managerRequest.getEmail())) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body("Email already exists");
+        }
+        
+        // Check if externalId already exists (if provided)
+        if (managerRequest.getExternalId() != null && !managerRequest.getExternalId().isBlank()) {
+            if (userRepository.findByExternalId(managerRequest.getExternalId()).isPresent()) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body("External ID already exists");
+            }
         }
         
         // Verify plaza exists
@@ -93,6 +97,11 @@ public class ManagerController {
         manager.setLastName(managerRequest.getLastName());
         manager.setPhoneNumber(managerRequest.getPhoneNumber());
         manager.setPlaza(plaza);
+        
+        // Set externalId if provided
+        if (managerRequest.getExternalId() != null && !managerRequest.getExternalId().isBlank()) {
+            manager.setExternalId(managerRequest.getExternalId());
+        }
         
         // Set roles (should include MANAGER role)
         if (managerRequest.getRoleIds() != null && !managerRequest.getRoleIds().isEmpty()) {
@@ -138,6 +147,7 @@ public class ManagerController {
         dto.setPlazaId(user.getPlaza().getId());
         dto.setPlazaName(user.getPlaza().getName());
         dto.setFullName(user.getFullName());
+        dto.setExternalId(user.getExternalId());
         
         if (user.getRoles() != null) {
             dto.setRoles(user.getRoles().stream()

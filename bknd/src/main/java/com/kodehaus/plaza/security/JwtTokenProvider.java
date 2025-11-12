@@ -6,14 +6,15 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
+import com.kodehaus.plaza.entity.User;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
 
-/**
- * JWT utility class for token generation and validation
- */
+
 @Component
 public class JwtTokenProvider {
     
@@ -32,15 +33,36 @@ public class JwtTokenProvider {
      */
     public String generateToken(Authentication authentication) {
         UserDetails userPrincipal = (UserDetails) authentication.getPrincipal();
+        // try to cast to our User entity to include plaza information
+        Long plazaId = null;
+        String plazaName = null;
+        java.util.UUID plazaUuid = null;
+        List<String> roles = null;
+        if (userPrincipal instanceof User) {
+            User u = (User) userPrincipal;
+            if (u.getPlaza() != null) {
+                plazaId = u.getPlaza().getId();
+                plazaName = u.getPlaza().getName();
+                plazaUuid = u.getPlaza().getUuid();
+            }
+            if (u.getRoles() != null) {
+                roles = u.getRoles().stream().map(r -> r.getName()).collect(Collectors.toList());
+            }
+        }
         Date expiryDate = new Date(System.currentTimeMillis() + jwtExpirationInMs);
         
-        return Jwts.builder()
+        JwtBuilder builder = Jwts.builder()
                 .subject(userPrincipal.getUsername())
                 .issuedAt(new Date())
                 .expiration(expiryDate)
-                .claim("authorities", userPrincipal.getAuthorities())
-                .signWith(getSigningKey())
-                .compact();
+                .claim("roles", roles)
+                .signWith(getSigningKey());
+
+        if (plazaId != null) builder.claim("plazaId", plazaId);
+        if (plazaName != null) builder.claim("plazaName", plazaName);
+        if (plazaUuid != null) builder.claim("plazaUuid", plazaUuid.toString());
+
+        return builder.compact();
     }
     
     /**
@@ -61,13 +83,46 @@ public class JwtTokenProvider {
      * Get username from JWT token
      */
     public String getUsernameFromToken(String token) {
-        Claims claims = Jwts.parser()
-                .verifyWith(getSigningKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+    Claims claims = Jwts.parser()
+        .verifyWith(getSigningKey())
+        .build()
+        .parseSignedClaims(token)
+        .getPayload();
         
-        return claims.getSubject();
+    return claims.getSubject();
+    }
+
+    public Long getPlazaIdFromToken(String token) {
+    Claims claims = Jwts.parser()
+        .verifyWith(getSigningKey())
+        .build()
+        .parseSignedClaims(token)
+        .getPayload();
+
+    Object val = claims.get("plazaId");
+    if (val instanceof Number) return ((Number) val).longValue();
+    if (val instanceof String) try { return Long.parseLong((String) val); } catch (Exception e) { return null; }
+    return null;
+    }
+
+    public String getPlazaNameFromToken(String token) {
+    Claims claims = Jwts.parser()
+        .verifyWith(getSigningKey())
+        .build()
+        .parseSignedClaims(token)
+        .getPayload();
+    return claims.get("plazaName", String.class);
+    }
+
+    public java.util.UUID getPlazaUuidFromToken(String token) {
+    Claims claims = Jwts.parser()
+        .verifyWith(getSigningKey())
+        .build()
+        .parseSignedClaims(token)
+        .getPayload();
+    String s = claims.get("plazaUuid", String.class);
+    if (s == null) return null;
+    try { return java.util.UUID.fromString(s); } catch (Exception e) { return null; }
     }
     
     /**

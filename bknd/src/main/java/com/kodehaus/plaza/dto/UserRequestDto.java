@@ -2,7 +2,6 @@ package com.kodehaus.plaza.dto;
 
 // Lombok annotations removed for compatibility
 
-import java.time.LocalDateTime;
 import java.util.Set;
 
 /**
@@ -17,12 +16,13 @@ public class UserRequestDto {
     private String phoneNumber;
     private Long plazaId;
     private Set<Long> roleIds;
+    private String externalId;
     
     // Constructors
     public UserRequestDto() {}
     
     public UserRequestDto(String username, String email, String password, String firstName, String lastName,
-                         String phoneNumber, Long plazaId, Set<Long> roleIds) {
+                         String phoneNumber, Long plazaId, Set<Long> roleIds, String externalId) {
         this.username = username;
         this.email = email;
         this.password = password;
@@ -31,6 +31,7 @@ public class UserRequestDto {
         this.phoneNumber = phoneNumber;
         this.plazaId = plazaId;
         this.roleIds = roleIds;
+        this.externalId = externalId;
     }
     
     // Getters and Setters
@@ -57,4 +58,7 @@ public class UserRequestDto {
     
     public Set<Long> getRoleIds() { return roleIds; }
     public void setRoleIds(Set<Long> roleIds) { this.roleIds = roleIds; }
+    
+    public String getExternalId() { return externalId; }
+    public void setExternalId(String externalId) { this.externalId = externalId; }
 }

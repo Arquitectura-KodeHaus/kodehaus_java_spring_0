@@ -12,12 +12,15 @@
       <a routerLink="/plaza" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}">
         Plaza
       </a>
-      <a routerLink="/boletin" routerLinkActive="active">Boletín</a>
-      <a routerLink="/locales" routerLinkActive="active">Locales</a>
-      <a routerLink="/pagos" routerLinkActive="active">Pagos</a>
-      <a routerLink="/parqueadero" routerLinkActive="active">Parqueadero</a>
+      <a routerLink="/boletin" routerLinkActive="active" *ngIf="hasModule('boletin') || hasModule('BULLETIN')">Boletín</a>
+      <a routerLink="/locales" routerLinkActive="active" *ngIf="hasModule('locales') || hasModule('STORES')">Locales</a>
+      <a routerLink="/pagos" routerLinkActive="active" *ngIf="hasModule('pagos') || hasModule('PAYMENTS')">Pagos</a>
+      <a routerLink="/parqueadero" routerLinkActive="active" *ngIf="hasModule('parqueadero') || hasModule('PARKING')">Parqueadero</a>
       <a routerLink="/usuarios" routerLinkActive="active" *ngIf="authService.hasRole('MANAGER') || authService.hasRole('ADMIN')">
         Usuarios
+      </a>
+      <a routerLink="/modules" routerLinkActive="active">
+        Módulos
       </a>
     </nav>
 

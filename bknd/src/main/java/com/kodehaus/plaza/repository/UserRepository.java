@@ -26,6 +26,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
     
     /**
+     * Find user by external id (provided by external system)
+     */
+    Optional<User> findByExternalId(String externalId);
+    
+    /**
      * Find all users by plaza
      */
     List<User> findByPlazaId(Long plazaId);
@@ -77,4 +82,20 @@ public interface UserRepository extends JpaRepository<User, Long> {
      */
     @Query("SELECT COUNT(p) > 0 FROM Plaza p WHERE p.id = :plazaId AND p.isActive = true")
     boolean existsByIdAndIsActiveTrue(@Param("plazaId") Long plazaId);
+    
+    /**
+     * Find users by store ID
+     */
+    List<User> findByStoreId(Long storeId);
+    
+    /**
+     * Find active users by store ID
+     */
+    List<User> findByStoreIdAndIsActiveTrue(Long storeId);
+    
+    /**
+     * Find store owner by store ID
+     */
+    @Query("SELECT u FROM User u WHERE u.store.id = :storeId AND u.isActive = true")
+    Optional<User> findStoreOwnerByStoreId(@Param("storeId") Long storeId);
 }

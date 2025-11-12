@@ -2,57 +2,76 @@
   <div class="page-header">
     <h2>🛍️ Locales Comerciales</h2>
     <p class="subtitle">Directorio de locales registrados en la plaza</p>
+    <button 
+      *ngIf="canCreateStore()" 
+      class="btn-primary" 
+      (click)="showCreateForm = true"
+      style="margin-top: 1rem;">
+      + Crear Nuevo Local
+    </button>
   </div>
 
-  <div *ngIf="locales.length > 0; else noData" class="locales-grid">
-    <div class="local-card" *ngFor="let local of locales">
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="isLoading" class="loading">
+    Cargando locales...
+  </div>
+
+  <div *ngIf="!isLoading && stores.length > 0; else noData" class="locales-grid">
+    <div class="local-card" *ngFor="let store of stores">
       <div class="card-header">
-        <h3>{{ local.nombre }}</h3>
-        <span class="owner-badge">{{ local.propietario }}</span>
+        <h3>{{ store.name }}</h3>
+        <span class="owner-badge" *ngIf="store.ownerName">{{ store.ownerName }}</span>
       </div>
       
-      <div class="metrics">
-        <div class="metric">
-          <span class="label">Ventas del día</span>
-          <span class="value">{{ local.ventasDia | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+      <div class="store-info" *ngIf="store.description">
+        <p>{{ store.description }}</p>
+      </div>
+
+      <div class="contact-info" *ngIf="store.phoneNumber || store.email">
+        <div *ngIf="store.phoneNumber">
+          <strong>Teléfono:</strong> {{ store.phoneNumber }}
         </div>
-        <div class="metric">
-          <span class="label">Ventas del mes</span>
-          <span class="value">{{ local.ventasMes | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
-        </div>
-        <div class="metric">
-          <span class="label">Última venta</span>
-          <span class="value">{{ local.ultimaVenta }}</span>
+        <div *ngIf="store.email">
+          <strong>Email:</strong> {{ store.email }}
         </div>
       </div>
 
-      <div class="section">
-        <h4>👥 Empleados</h4>
-        <div class="empleados-list">
-          <div class="empleado-badge" *ngFor="let emp of local.empleados">
-            <span class="emp-nombre">{{ emp.nombre }}</span>
-            <span class="emp-rol">{{ emp.rol }}</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="section">
-        <h4>📦 Inventario</h4>
-        <div class="inventario-list">
-          <div class="inventario-item" *ngFor="let item of local.inventario">
-            <span class="producto">{{ item.producto }}</span>
-            <span class="stock">Stock: {{ item.stock }}</span>
-          </div>
-        </div>
+      <div class="card-actions" *ngIf="canCreateStore()">
+        <button class="btn-secondary" [routerLink]="['/stores', store.id, 'owner']" *ngIf="store.id">
+          Crear Dueño
+        </button>
+        <button class="btn-danger" (click)="deleteStore(store.id!)" *ngIf="store.id">
+          Eliminar
+        </button>
       </div>
     </div>
   </div>
 
   <ng-template #noData>
-    <div class="empty-state">
+    <div class="empty-state" *ngIf="!isLoading">
       <div class="empty-icon">🏪</div>
       <h3>No hay locales registrados</h3>
       <p>Aún no se han registrado locales comerciales</p>
+      <button 
+        *ngIf="canCreateStore()" 
+        class="btn-primary" 
+        (click)="showCreateForm = true"
+        style="margin-top: 1rem;">
+        Crear Primer Local
+      </button>
     </div>
   </ng-template>
+
+  <!-- Create Store Form Modal -->
+  <div *ngIf="showCreateForm" class="modal-overlay" (click)="showCreateForm = false">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <app-create-store 
+        (storeCreated)="onStoreCreated()"
+        (cancel)="showCreateForm = false">
+      </app-create-store>
+    </div>
+  </div>
 </div>
