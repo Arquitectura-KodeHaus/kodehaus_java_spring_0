@@ -225,6 +225,13 @@ export class ModulesComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // Check if user is logged in
+    if (!this.authService.isLoggedIn()) {
+      this.errorMessage = 'Debes iniciar sesión para ver los módulos';
+      this.isLoading = false;
+      return;
+    }
+    
     this.loadModules();
   }
 
@@ -232,6 +239,17 @@ export class ModulesComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = '';
 
+    // First, try to get modules from service (already loaded by AuthService)
+    const cachedModules = this.moduleService.getAvailableModules();
+    
+    if (cachedModules.length > 0) {
+      // Use cached modules
+      this.modules = cachedModules;
+      this.isLoading = false;
+      return;
+    }
+
+    // If no cached modules, fetch from backend
     this.moduleService.getModules().subscribe({
       next: (modules: any[]) => {
         this.isLoading = false;
