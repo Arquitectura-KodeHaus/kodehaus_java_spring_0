@@ -15,7 +15,8 @@ import java.util.Map;
  * Module Controller for managing modules from external system
  */
 @RestController
-@RequestMapping("/api/modulos")
+// Support both English and legacy Spanish paths
+@RequestMapping({"/api/modules", "/api/modulos"})
 @CrossOrigin(origins = "*")
 public class ModuleController {
     
