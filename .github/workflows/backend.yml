@@ -2,7 +2,7 @@ name: Backend CI/CD - GCP
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, develop ] # 1. Se activa en main y develop
     paths:
       - 'bknd/**'
       - '.github/workflows/backend.yml'
@@ -11,8 +11,7 @@ env:
   PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
   REGION: ${{ vars.GCP_REGION }}
   AR_REPO: ${{ vars.ARTIFACT_REGISTRY_REPO || 'stocks-backend' }}
-  SERVICE: backend-service-java-2
-  IMAGE_NAME: backend-java-2
+  # SERVICE e IMAGE_NAME se definen dinámicamente abajo
 
 jobs:
   build-and-deploy:
@@ -27,6 +26,30 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      # 2. Lógica para definir variables según el ambiente (Prod vs QA)
+      - name: Define Environment Variables
+        id: env-vars
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "🌍 Ambiente detectado: PRODUCCION"
+            echo "SERVICE=backend-service-java-2" >> $GITHUB_ENV
+            echo "IMAGE_NAME=backend-java-2" >> $GITHUB_ENV
+            echo "CLOUDSQL_INSTANCE=kodehaus-prod-474304:us-central1:pg-prod" >> $GITHUB_ENV
+            echo "SECRET_DB_URL=DB_URL_JAVA0" >> $GITHUB_ENV
+            echo "SECRET_DB_PASS=DB_PASSWORD" >> $GITHUB_ENV
+            # URL del sistema externo para PROD
+            echo "EXT_SYSTEM_URL=https://stocks-backend-service-616328447495.us-central1.run.app" >> $GITHUB_ENV
+          else
+            echo "🧪 Ambiente detectado: QA"
+            echo "SERVICE=backend-service-java-2-qa" >> $GITHUB_ENV
+            echo "IMAGE_NAME=backend-java-2-qa" >> $GITHUB_ENV
+            echo "CLOUDSQL_INSTANCE=kodehaus-prod-474304:us-central1:pg-pruebas" >> $GITHUB_ENV
+            echo "SECRET_DB_URL=DB_URL_JAVA0_QA" >> $GITHUB_ENV
+            echo "SECRET_DB_PASS=DB_PASSWORD_QA" >> $GITHUB_ENV
+            # URL del sistema externo para QA (Si tienes uno de QA úsalo, si no, usa el de prod)
+            echo "EXT_SYSTEM_URL=https://stocks-backend-service-616328447495.us-central1.run.app" >> $GITHUB_ENV
+          fi
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -58,7 +81,7 @@ jobs:
         run: |
           IMAGE_URI="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/${{ env.IMAGE_NAME }}:${IMAGE_TAG}"
           
-          echo "🔨 Building Docker image..."
+          echo "🔨 Building Docker image for ${{ env.SERVICE }}..."
           docker build -t "$IMAGE_URI" .
           
           echo "📦 Pushing image..."
@@ -70,13 +93,16 @@ jobs:
       - name: Deploy to Cloud Run
         working-directory: .
         run: |
+          echo "🚀 Desplegando servicio: ${{ env.SERVICE }}"
+          echo "🔌 Conectando a instancia SQL: ${{ env.CLOUDSQL_INSTANCE }}"
+          
           gcloud run deploy "${{ env.SERVICE }}" \
             --region "${{ env.REGION }}" \
             --image "${IMAGE_URI_DIGEST}" \
             --platform managed \
             --allow-unauthenticated \
             --service-account "run-backend-sa@${{ env.PROJECT_ID }}.iam.gserviceaccount.com" \
-            --add-cloudsql-instances "kodehaus-prod-474304:us-central1:pg-prod" \
+            --add-cloudsql-instances "${{ env.CLOUDSQL_INSTANCE }}" \
             --memory 2Gi \
             --cpu 2 \
             --min-instances 0 \
@@ -84,8 +110,8 @@ jobs:
             --timeout 300 \
             --port 8080 \
             --cpu-boost \
-            --set-secrets "SPRING_DATASOURCE_URL=DB_URL_JAVA0:latest,SPRING_DATASOURCE_USERNAME=DB_USERNAME:latest,SPRING_DATASOURCE_PASSWORD=DB_PASSWORD:latest" \
-            --set-env-vars "JWT_SECRET=mySecretKeyForJWTTokenGenerationAndValidationMustBeAtLeast512BitsLong12345678901234567890,EXTERNAL_SYSTEM_OWNER_URL=https://stocks-backend-service-616328447495.us-central1.run.app"
+            --set-secrets "SPRING_DATASOURCE_URL=${{ env.SECRET_DB_URL }}:latest,SPRING_DATASOURCE_USERNAME=DB_USERNAME:latest,SPRING_DATASOURCE_PASSWORD=${{ env.SECRET_DB_PASS }}:latest" \
+            --set-env-vars "JWT_SECRET=mySecretKeyForJWTTokenGenerationAndValidationMustBeAtLeast512BitsLong12345678901234567890,EXTERNAL_SYSTEM_OWNER_URL=${{ env.EXT_SYSTEM_URL }}"
 
       - name: Verify & Display Info
         working-directory: .
@@ -104,7 +130,7 @@ jobs:
           if [ "$HTTP_CODE" -eq 200 ]; then
             echo ""
             echo "✅ ========================================="
-            echo "   Backend Deployed Successfully!"
+            echo "   Backend (${{ env.SERVICE }}) Deployed Successfully!"
             echo "   ========================================="
             echo ""
             echo "🔗 Endpoints:"
