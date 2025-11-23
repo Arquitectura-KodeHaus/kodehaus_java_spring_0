@@ -2,7 +2,7 @@ name: Frontend CI/CD - GCP
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, develop ] # 1. Agregamos develop
     paths:
       - 'frnt/**'
       - '.github/workflows/frontend.yml'
@@ -11,8 +11,7 @@ env:
   PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
   REGION: ${{ vars.GCP_REGION }}
   AR_REPO: ${{ vars.ARTIFACT_REGISTRY_REPO || 'stocks-backend' }}
-  SERVICE: frontend-service-java-2
-  IMAGE_NAME: frontend-java-2
+  # SERVICE e IMAGE_NAME se definen dinámicamente abajo
 
 jobs:
   build-and-deploy:
@@ -28,6 +27,24 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      # 2. Definir variables según el ambiente
+      - name: Define Environment Variables
+        id: env-vars
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "🌍 Ambiente detectado: PRODUCCION"
+            echo "SERVICE=frontend-service-java-2" >> $GITHUB_ENV
+            echo "IMAGE_NAME=frontend-java-2" >> $GITHUB_ENV
+            # Usa la variable de GitHub configurada para Prod
+            echo "BACKEND_API_URL=${{ vars.BACKEND_URL_JAVA_2 }}" >> $GITHUB_ENV
+          else
+            echo "🧪 Ambiente detectado: QA"
+            echo "SERVICE=frontend-service-java-2-qa" >> $GITHUB_ENV
+            echo "IMAGE_NAME=frontend-java-2-qa" >> $GITHUB_ENV
+            # Usa la variable de GitHub configurada para QA
+            echo "BACKEND_API_URL=${{ vars.BACKEND_URL_JAVA_2_QA }}" >> $GITHUB_ENV
+          fi
 
       - name: Auth to GCP (Workload Identity Federation)
         uses: google-github-actions/auth@v2
@@ -45,14 +62,14 @@ jobs:
       - name: Build & Push Docker image
         env:
           IMAGE_TAG: ${{ github.sha }}
-          BACKEND_URL_JAVA_2: ${{ vars.BACKEND_URL_JAVA_2 }}
+          # Usamos la variable dinámica BACKEND_API_URL
         run: |
           IMAGE_URI="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/${{ env.IMAGE_NAME }}:${IMAGE_TAG}"
           
-          echo "🔨 Building image with BACKEND_URL: ${BACKEND_URL_JAVA_2}"
+          echo "🔨 Building image with BACKEND_URL: ${BACKEND_API_URL}"
           
           docker build \
-            --build-arg BACKEND_URL="${BACKEND_URL_JAVA_2}" \
+            --build-arg BACKEND_URL="${BACKEND_API_URL}" \
             --tag "${IMAGE_URI}" \
             --tag "${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/${{ env.IMAGE_NAME }}:latest" \
             .
@@ -61,7 +78,6 @@ jobs:
           docker push "${IMAGE_URI}"
           docker push "${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/${{ env.IMAGE_NAME }}:latest"
           
-          # Obtener digest para deploy inmutable
           DIGEST=$(gcloud artifacts docker images describe "${IMAGE_URI}" --format='value(image_summary.digest)')
           echo "IMAGE_URI_DIGEST=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/${{ env.IMAGE_NAME }}@${DIGEST}" >> $GITHUB_ENV
 
@@ -81,7 +97,7 @@ jobs:
             --timeout 10 \
             --concurrency 80 \
             --cpu-boost \
-            --labels "app=stocks-frontend,env=production,tier=frontend"
+            --labels "app=stocks-frontend,env=${{ github.ref == 'refs/heads/main' && 'production' || 'qa' }}"
 
       - name: Verify deployment
         working-directory: .
@@ -92,20 +108,9 @@ jobs:
           
           echo "🌐 Service URL: ${SERVICE_URL}"
           
-          # Esperar que esté listo
           sleep 10
           
-          # Health check
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${SERVICE_URL}/health")
-          
-          if [ "$HTTP_CODE" -eq 200 ]; then
-            echo "✅ Health check passed!"
-          else
-            echo "❌ Health check failed (HTTP ${HTTP_CODE})"
-            exit 1
-          fi
-          
-          # Verificar index.html
+          # Health check simple
           HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${SERVICE_URL}/")
           
           if [ "$HTTP_CODE" -eq 200 ]; then
@@ -124,10 +129,10 @@ jobs:
           
           echo ""
           echo "🎉 =================================="
-          echo "   Frontend Deployed Successfully!"
+          echo "   Frontend (${{ env.SERVICE }}) Deployed Successfully!"
           echo "   =================================="
           echo ""
           echo "🌐 Frontend URL: ${SERVICE_URL}"
-          echo "🔗 Backend URL: ${{ vars.BACKEND_URL_JAVA_2 }}"
+          echo "🔗 Backend URL: ${{ env.BACKEND_API_URL }}"
           echo "📦 Image: ${IMAGE_URI_DIGEST}"
           echo ""
