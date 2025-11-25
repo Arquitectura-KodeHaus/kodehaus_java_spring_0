@@ -4,6 +4,9 @@ import com.kodehaus.plaza.entity.Plaza;
 import com.kodehaus.plaza.entity.User;
 import com.kodehaus.plaza.service.ExternalSystemService;
 import jakarta.annotation.security.PermitAll;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +21,7 @@ import java.util.Map;
 @RequestMapping({"/api/modules", "/api/modulos"})
 @CrossOrigin(origins = "*")
 public class ModuleController {
+    private static final Logger log = LoggerFactory.getLogger(ModuleController.class);
 
     private final ExternalSystemService externalSystemService;
 
@@ -40,13 +44,15 @@ public class ModuleController {
             }
 
             User currentUser = (User) authentication.getPrincipal();
+            log.debug("Current user: {}", currentUser);
             Plaza plaza = currentUser.getPlaza();
+            log.debug("User plaza: {}", plaza);
 
             // Get external_id if available, otherwise pass null (will fetch all modules)
             String externalId = (plaza != null && plaza.getExternalId() != null && !plaza.getExternalId().isBlank())
                     ? plaza.getExternalId()
                     : null;
-
+            log.debug("Plaza externalId from DB: {}", externalId);
             return externalSystemService.getPlazaModules(externalId);
         } catch (Exception e) {
             System.err.println("Error in ModuleController.getModules: " + e.getMessage());
