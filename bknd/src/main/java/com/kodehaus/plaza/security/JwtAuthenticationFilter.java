@@ -63,16 +63,36 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             
             String jwt = getJwtFromRequest(request);
             
-            if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
-                String username = tokenProvider.getUsernameFromToken(jwt);
-                
-                UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
-                UsernamePasswordAuthenticationToken authentication = 
-                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-                log.debug("✅ JWT validated for user: {} on path: {}", username, path);
+            if (StringUtils.hasText(jwt)) {
+                if (tokenProvider.validateToken(jwt)) {
+                    String username = tokenProvider.getUsernameFromToken(jwt);
+                    
+                    UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
+                    UsernamePasswordAuthenticationToken authentication = 
+                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    log.debug("✅ JWT validated for user: {} on path: {}", username, path);
+                } else {
+                    // Try Google Token
+                    String googleEmail = tokenProvider.getEmailFromGoogleToken(jwt);
+                    if (googleEmail != null) {
+                        try {
+                            UserDetails userDetails = customUserDetailsService.loadUserByUsername(googleEmail);
+                            UsernamePasswordAuthenticationToken authentication = 
+                                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                            
+                            SecurityContextHolder.getContext().setAuthentication(authentication);
+                            log.debug("✅ Google JWT validated for user: {} on path: {}", googleEmail, path);
+                        } catch (Exception e) {
+                            log.warn("⚠️ Google Token valid but user not found: {}", googleEmail);
+                        }
+                    } else {
+                        log.debug("⚠️ No valid JWT found in request to: {}", path);
+                    }
+                }
             } else {
                 log.debug("⚠️ No valid JWT found in request to: {}", path);
             }
