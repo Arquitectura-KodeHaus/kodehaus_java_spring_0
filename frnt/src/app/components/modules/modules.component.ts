@@ -239,8 +239,7 @@ export class ModulesComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = '';
 
-    // First, try to get modules from service (already loaded by AuthService)
-    /*
+    // First, try to get modules from service (already loaded by AuthService)/*
     const cachedModules = this.moduleService.getAvailableModules();
     
     if (cachedModules.length > 0) {
@@ -248,7 +247,7 @@ export class ModulesComponent implements OnInit {
       this.modules = cachedModules;
       this.isLoading = false;
       return;
-    }*/
+    }
 
     // If no cached modules, fetch from backend
     this.moduleService.getModules().subscribe({
