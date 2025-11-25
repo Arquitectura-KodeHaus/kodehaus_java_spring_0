@@ -36,12 +36,17 @@ public class ModuleController {
      */
     @GetMapping
     @PermitAll
-    public ResponseEntity<List<Map<String, Object>>> getModules(Authentication authentication) {
+    public ResponseEntity<List<Map<String, Object>>> getModules(Authentication authentication, @PathVariable String plazaExternalId) {
         try {
             if (authentication == null || authentication.getPrincipal() == null) {
                 // No authentication, try to get all modules anyway
                 log.info("No user: {}", authentication.getPrincipal());
                 return externalSystemService.getPlazaModules(null);
+            }
+
+            if (plazaExternalId != null) {
+                log.info("Modulos para plaza con id {}", plazaExternalId);
+                return externalSystemService.getPlazaModules(plazaExternalId);
             }
 
             User currentUser = (User) authentication.getPrincipal();

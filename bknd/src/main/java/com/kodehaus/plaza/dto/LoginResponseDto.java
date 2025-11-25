@@ -19,6 +19,7 @@ public class LoginResponseDto {
     private Long plazaId;
     private String plazaName;
     private Set<String> roles;
+    private String externalId;
     
     // Constructors
     public LoginResponseDto() {}
@@ -72,4 +73,7 @@ public class LoginResponseDto {
     
     public Set<String> getRoles() { return roles; }
     public void setRoles(Set<String> roles) { this.roles = roles; }
+
+    public String getExternalId() { return externalId; }
+    public void setExternalId(String externalId) { this.externalId = externalId; }
 }

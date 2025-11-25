@@ -20,7 +20,8 @@ export class ModuleService {
   constructor(private http: HttpClient) {}
 
   getModules(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.API_URL}/modulos`);
+    const externalId = localStorage.getItem('external_id');
+    return this.http.get<any[]>(`${this.API_URL}/modulos/plaza/${externalId}`);
   }
 
   /**

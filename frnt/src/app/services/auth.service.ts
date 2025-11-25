@@ -22,6 +22,7 @@ export interface LoginResponse {
   plazaId: number;
   plazaName: string;
   roles: string[];
+  externalId: string;
 }
 
 /**
@@ -96,7 +97,9 @@ export class AuthService {
           
           // Guardar token y usuario en localStorage
           localStorage.setItem(this.TOKEN_KEY, response.accessToken);
+          localStorage.setItem('external_id', response.externalId);
           localStorage.setItem(this.USER_KEY, JSON.stringify(response));
+          
 
           // Mapear la respuesta del backend al formato User
           const user: User = {
@@ -116,7 +119,7 @@ export class AuthService {
           
           // Load modules after successful login with a longer delay to ensure token is saved
           setTimeout(() => {
-            //this.loadModules();
+            this.loadModules();
           }, 500);
         }),
         catchError((error) => {
@@ -129,7 +132,8 @@ export class AuthService {
   /**
    * Load modules from the backend
    */
-  private loadModules(): void {
+  private loadModules() {
+    const token = localStorage.getItem(this.TOKEN_KEY);
     try {
       const moduleService = this.getModuleService();
       moduleService.getModules().subscribe({
@@ -161,6 +165,7 @@ export class AuthService {
     console.log('🚪 Logging out...');
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
+    localStorage.removeItem('external_id');
     this.userSubject.next(null);
     this.router.navigate(['/login']);
   }

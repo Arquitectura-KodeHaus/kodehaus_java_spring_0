@@ -78,6 +78,8 @@ public class AuthController {
         response.setFirstName(user.getFirstName());
         response.setLastName(user.getLastName());
         response.setFullName(user.getFullName());
+        response.setExternalId(user.getPlaza().getExternalId());
+
         
         // ✅ VERIFICAR SI PLAZA EXISTE
         if (user.getPlaza() != null) {
