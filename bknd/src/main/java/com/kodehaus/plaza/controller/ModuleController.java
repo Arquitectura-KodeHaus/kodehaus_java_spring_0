@@ -40,7 +40,8 @@ public class ModuleController {
         try {
             if (authentication == null || authentication.getPrincipal() == null) {
                 // No authentication, try to get all modules anyway
-                return externalSystemService.getPlazaModules(null);
+                log.debug("No user: {}", authentication.getPrincipal());
+                return externalSystemService.getPlazaModules("22");
             }
 
             User currentUser = (User) authentication.getPrincipal();
