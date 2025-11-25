@@ -7,7 +7,10 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
 import org.springframework.web.client.RestClientException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -18,6 +21,7 @@ import java.util.Map;
  */
 @Service
 public class ExternalSystemService {
+    private static final Logger log = LoggerFactory.getLogger(ExternalSystemService.class);
     
     @Value("${external.system-owner.url:http://localhost:8082}")
     private String systemOwnerUrl;
@@ -40,7 +44,7 @@ public class ExternalSystemService {
         try {
             // Try to get modules by plaza first, if that fails or plazaExternalId is null, get all modules
             String url;
-            System.out.print("Eternal ID: " + plazaExternalId);
+            log.debug("Eternal ID: {}", plazaExternalId);
             if (plazaExternalId != null && !plazaExternalId.isBlank()) {
                 url = systemOwnerUrl + "/api/plazas/" + plazaExternalId + "/modules";
             } else {
@@ -48,7 +52,7 @@ public class ExternalSystemService {
                 url = systemOwnerUrl + "/api/modulos";
             }
             
-            System.out.print("URL Modulos: " + url);
+            log.debug("URL Modulos: {}", url);
             HttpHeaders headers = new HttpHeaders();
             headers.set("Content-Type", "application/json");
             if (systemOwnerApiKey != null && !systemOwnerApiKey.isEmpty()) {
@@ -62,7 +66,7 @@ public class ExternalSystemService {
             
             ResponseEntity<List<Map<String, Object>>> response = restTemplate.exchange(url, HttpMethod.GET, request, responseType);
             
-            System.out.println("✅ Successfully fetched modules from: " + url);
+            log.debug("✅ Successfully fetched modules from: " + url);
             return response;
         } catch (RestClientException e) {
             System.err.println("Error calling external system owner service: " + e.getMessage());
