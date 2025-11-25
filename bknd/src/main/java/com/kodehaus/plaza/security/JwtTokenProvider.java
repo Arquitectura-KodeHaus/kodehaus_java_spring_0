@@ -2,6 +2,10 @@ package com.kodehaus.plaza.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.gson.GsonFactory;
 // Lombok annotations removed for compatibility
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -168,5 +172,22 @@ public class JwtTokenProvider {
     public Boolean isTokenExpired(String token) {
         final Date expiration = getExpirationDateFromToken(token);
         return expiration.before(new Date());
+    }
+
+    /**
+     * Verify Google ID Token and return email
+     */
+    public String getEmailFromGoogleToken(String token) {
+        try {
+            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory())
+                .build();
+            GoogleIdToken idToken = verifier.verify(token);
+            if (idToken != null) {
+                return idToken.getPayload().getEmail();
+            }
+        } catch (Exception e) {
+            // Token invalid or verification failed
+        }
+        return null;
     }
 }
