@@ -116,7 +116,7 @@ export class AuthService {
           
           // Load modules after successful login with a longer delay to ensure token is saved
           setTimeout(() => {
-            this.loadModules();
+            //this.loadModules();
           }, 500);
         }),
         catchError((error) => {
@@ -135,7 +135,7 @@ export class AuthService {
       moduleService.getModules().subscribe({
         next: (modules: any) => {
           if (modules && Array.isArray(modules)) {
-            console.log('✅ Modules loaded:', modules);
+            console.log('✅ Modules loaded from Auth:', modules);
             moduleService.setModules(modules);
           } else {
             console.log('⚠️ No modules received or invalid format, using empty array');
