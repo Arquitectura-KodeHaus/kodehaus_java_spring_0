@@ -46,7 +46,7 @@ public class ExternalSystemService {
             String url;
             log.debug("Eternal ID: {}", plazaExternalId);
             if (plazaExternalId != null && !plazaExternalId.isBlank()) {
-                url = systemOwnerUrl + "/api/plazas/" + plazaExternalId + "/modules";
+                url = systemOwnerUrl + "/api/modulos/plaza/" + plazaExternalId;
             } else {
                 // Fallback to getting all modules (simplified approach for stocks-backend)
                 url = systemOwnerUrl + "/api/modulos";
