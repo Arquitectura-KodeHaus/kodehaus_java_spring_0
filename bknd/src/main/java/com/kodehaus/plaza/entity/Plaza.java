@@ -27,7 +27,7 @@ public class Plaza {
     private UUID uuid;
 
     // External identifier provided by the external system (optional)
-    @Column(name = "external_id", unique = true)
+    @Column(name = "external_id", unique = false)
     private String externalId;
     
     @NotBlank(message = "Plaza name is required")

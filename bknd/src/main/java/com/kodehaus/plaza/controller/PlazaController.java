@@ -52,6 +52,9 @@ public class PlazaController {
         plaza.setOpeningHours(req.getOpeningHours());
         plaza.setClosingHours(req.getClosingHours());
         plaza.setIsActive(true);
+        // Generar un externalId aleatorio si no se proporciona para evitar colisiones si la columna fuera única
+        // aunque ya hemos quitado la restricción unique=true en la entidad.
+        plaza.setExternalId(java.util.UUID.randomUUID().toString());
 
         Plaza saved = plazaRepository.save(plaza);
         return ResponseEntity.ok(convertToResponseDto(saved));
