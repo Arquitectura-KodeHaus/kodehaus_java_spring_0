@@ -40,20 +40,20 @@ public class ModuleController {
         try {
             if (authentication == null || authentication.getPrincipal() == null) {
                 // No authentication, try to get all modules anyway
-                log.warn("No user: {}", authentication.getPrincipal());
+                log.info("No user: {}", authentication.getPrincipal());
                 return externalSystemService.getPlazaModules(null);
             }
 
             User currentUser = (User) authentication.getPrincipal();
-            log.warn("Current user: {}", currentUser);
+            log.info("Current user: {}", currentUser);
             Plaza plaza = currentUser.getPlaza();
-            log.warn("User plaza: {}", plaza);
+            log.info("User plaza: {}", plaza);
 
             // Get external_id if available, otherwise pass null (will fetch all modules)
             String externalId = (plaza != null && plaza.getExternalId() != null && !plaza.getExternalId().isBlank())
                     ? plaza.getExternalId()
                     : null;
-            log.warn("Plaza externalId from DB: {}", externalId);
+            log.info("Plaza externalId from DB: {}", externalId);
             return externalSystemService.getPlazaModules(externalId);
         } catch (Exception e) {
             System.err.println("Error in ModuleController.getModules: " + e.getMessage());

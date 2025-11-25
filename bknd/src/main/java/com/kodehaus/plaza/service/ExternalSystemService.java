@@ -44,7 +44,7 @@ public class ExternalSystemService {
         try {
             // Try to get modules by plaza first, if that fails or plazaExternalId is null, get all modules
             String url;
-            log.warn("Eternal ID: {}", plazaExternalId);
+            log.info("External ID: {}", plazaExternalId);
             if (plazaExternalId != null && !plazaExternalId.isBlank()) {
                 url = systemOwnerUrl + "/api/modulos/plaza/" + plazaExternalId;
             } else {
@@ -52,7 +52,7 @@ public class ExternalSystemService {
                 url = systemOwnerUrl + "/api/modulos";
             }
             
-            log.warn("URL Modulos: {}", url);
+            log.info("URL Modulos: {}", url);
             HttpHeaders headers = new HttpHeaders();
             headers.set("Content-Type", "application/json");
             if (systemOwnerApiKey != null && !systemOwnerApiKey.isEmpty()) {
@@ -66,7 +66,7 @@ public class ExternalSystemService {
             
             ResponseEntity<List<Map<String, Object>>> response = restTemplate.exchange(url, HttpMethod.GET, request, responseType);
             
-            log.warn("✅ Successfully fetched modules from: " + url);
+            log.info("✅ Successfully fetched modules from: " + url);
             return response;
         } catch (RestClientException e) {
             System.err.println("Error calling external system owner service: " + e.getMessage());
