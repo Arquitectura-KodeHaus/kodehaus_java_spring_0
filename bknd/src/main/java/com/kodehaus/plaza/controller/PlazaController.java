@@ -26,10 +26,20 @@ public class PlazaController {
     
     @PostMapping
     public ResponseEntity<PlazaResponseDto> createPlaza(@RequestBody PlazaCreateRequest req) {
+        // Log para depuración
+        System.out.println("POST /api/plazas received: " + req);
+
         // Validaciones simples
-        if (req.getName() == null || req.getName().isBlank() ||
-            req.getAddress() == null || req.getAddress().isBlank() ||
-            req.getPhoneNumber() == null || req.getPhoneNumber().isBlank()) {
+        if (req.getName() == null || req.getName().isBlank()) {
+            System.out.println("Validation Error: Name is required");
+            return ResponseEntity.badRequest().build();
+        }
+        if (req.getAddress() == null || req.getAddress().isBlank()) {
+            System.out.println("Validation Error: Address is required");
+            return ResponseEntity.badRequest().build();
+        }
+        if (req.getPhoneNumber() == null || req.getPhoneNumber().isBlank()) {
+            System.out.println("Validation Error: PhoneNumber is required");
             return ResponseEntity.badRequest().build();
         }
 
@@ -154,6 +164,19 @@ public class PlazaController {
         public void setOpeningHours(String openingHours) { this.openingHours = openingHours; }
         public String getClosingHours() { return closingHours; }
         public void setClosingHours(String closingHours) { this.closingHours = closingHours; }
+
+        @Override
+        public String toString() {
+            return "PlazaCreateRequest{" +
+                    "name='" + name + '\'' +
+                    ", description='" + description + '\'' +
+                    ", address='" + address + '\'' +
+                    ", phoneNumber='" + phoneNumber + '\'' +
+                    ", email='" + email + '\'' +
+                    ", openingHours='" + openingHours + '\'' +
+                    ", closingHours='" + closingHours + '\'' +
+                    '}';
+        }
     }
     
     @GetMapping
