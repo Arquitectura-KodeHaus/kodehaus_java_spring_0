@@ -116,7 +116,7 @@ export class AuthService {
           
           // Load modules after successful login with a longer delay to ensure token is saved
           setTimeout(() => {
-            this.loadModules();
+            //this.loadModules();
           }, 500);
         }),
         catchError((error) => {
