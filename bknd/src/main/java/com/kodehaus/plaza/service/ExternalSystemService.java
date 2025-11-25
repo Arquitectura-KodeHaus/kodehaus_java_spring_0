@@ -40,6 +40,7 @@ public class ExternalSystemService {
         try {
             // Try to get modules by plaza first, if that fails or plazaExternalId is null, get all modules
             String url;
+            System.out.print("Eternal ID: " + plazaExternalId);
             if (plazaExternalId != null && !plazaExternalId.isBlank()) {
                 url = systemOwnerUrl + "/api/plazas/" + plazaExternalId + "/modules";
             } else {
@@ -47,6 +48,7 @@ public class ExternalSystemService {
                 url = systemOwnerUrl + "/api/modulos";
             }
             
+            System.out.print("URL Modulos: " + url);
             HttpHeaders headers = new HttpHeaders();
             headers.set("Content-Type", "application/json");
             if (systemOwnerApiKey != null && !systemOwnerApiKey.isEmpty()) {
