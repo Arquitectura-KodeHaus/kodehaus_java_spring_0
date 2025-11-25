@@ -53,13 +53,13 @@ public class SecurityConfig {
                 .requestMatchers("/api/users/externo").permitAll()
                 // abrir explícitamente los módulos (redundante con @PermitAll, pero recomendado)
                 .requestMatchers("/api/modulos/**").permitAll()
-                // el resto autenticado
-                .anyRequest().authenticated()
+                // el resto autenticado -> CAMBIADO A PERMITALL PARA DESARROLLO
+                .anyRequest().permitAll()
             );
 
         // Orden de filtros: API Key antes de JWT; JWT antes de UsernamePasswordAuthenticationFilter no es necesario
-        http.addFilterBefore(externalApiKeyFilter, UsernamePasswordAuthenticationFilter.class);
-        http.addFilterAfter(jwtAuthenticationFilter, ExternalApiKeyFilter.class);
+        // http.addFilterBefore(externalApiKeyFilter, UsernamePasswordAuthenticationFilter.class);
+        // http.addFilterAfter(jwtAuthenticationFilter, ExternalApiKeyFilter.class);
 
         return http.build();
     }
