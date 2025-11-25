@@ -30,6 +30,8 @@ public class ExternalApiKeyFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
+        // DESACTIVADO PARA DESARROLLO
+        /*
         String path = request.getRequestURI();
 
         boolean shouldProtect = PROTECTED_PATHS.stream().anyMatch(p -> pathMatcher.match(p, path));
@@ -43,6 +45,7 @@ public class ExternalApiKeyFilter extends OncePerRequestFilter {
                 return;
             }
         }
+        */
 
         filterChain.doFilter(request, response);
     }
