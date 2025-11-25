@@ -52,9 +52,13 @@ public class PlazaController {
         plaza.setOpeningHours(req.getOpeningHours());
         plaza.setClosingHours(req.getClosingHours());
         plaza.setIsActive(true);
-        // Generar un externalId aleatorio si no se proporciona para evitar colisiones si la columna fuera única
-        // aunque ya hemos quitado la restricción unique=true en la entidad.
-        plaza.setExternalId(java.util.UUID.randomUUID().toString());
+        
+        // Usar externalId si viene en el request, sino generar UUID
+        if (req.getExternalId() != null && !req.getExternalId().isBlank()) {
+            plaza.setExternalId(req.getExternalId());
+        } else {
+            plaza.setExternalId(java.util.UUID.randomUUID().toString());
+        }
 
         Plaza saved = plazaRepository.save(plaza);
         return ResponseEntity.ok(convertToResponseDto(saved));
@@ -145,6 +149,7 @@ public class PlazaController {
     
     // DTO para creación
     public static class PlazaCreateRequest {
+        private String externalId; // Campo opcional para ID externo
         private String name;
         private String description;
         private String address;
@@ -153,6 +158,8 @@ public class PlazaController {
         private String openingHours; // formato HH:mm
         private String closingHours; // formato HH:mm
 
+        public String getExternalId() { return externalId; }
+        public void setExternalId(String externalId) { this.externalId = externalId; }
         public String getName() { return name; }
         public void setName(String name) { this.name = name; }
         public String getDescription() { return description; }
@@ -171,7 +178,8 @@ public class PlazaController {
         @Override
         public String toString() {
             return "PlazaCreateRequest{" +
-                    "name='" + name + '\'' +
+                    "externalId='" + externalId + '\'' +
+                    ", name='" + name + '\'' +
                     ", description='" + description + '\'' +
                     ", address='" + address + '\'' +
                     ", phoneNumber='" + phoneNumber + '\'' +
@@ -215,6 +223,7 @@ public class PlazaController {
     private PlazaResponseDto convertToResponseDto(Plaza plaza) {
         PlazaResponseDto dto = new PlazaResponseDto();
         dto.setId(plaza.getId());
+        dto.setExternalId(plaza.getExternalId());
         dto.setName(plaza.getName());
         dto.setDescription(plaza.getDescription());
         dto.setAddress(plaza.getAddress());
@@ -277,6 +286,7 @@ public class PlazaController {
     // Inner class for plaza responses
     public static class PlazaResponseDto {
         private Long id;
+        private String externalId;
         private String name;
         private String description;
         private String address;
@@ -291,6 +301,9 @@ public class PlazaController {
         // Getters and setters
         public Long getId() { return id; }
         public void setId(Long id) { this.id = id; }
+
+        public String getExternalId() { return externalId; }
+        public void setExternalId(String externalId) { this.externalId = externalId; }
         
         public String getName() { return name; }
         public void setName(String name) { this.name = name; }
