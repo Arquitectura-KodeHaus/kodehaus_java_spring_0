@@ -231,7 +231,7 @@ public class StoreController {
         
         // Call external store management service to create owner profile (non-blocking)
         try {
-            if (currentUser.getPlaza().getExternalId() != null) {
+            if (currentUser.getPlaza().getId() != null) {
                 Map<String, Object> ownerData = new HashMap<>();
                 ownerData.put("nombreUsuario", savedOwner.getUsername());
                 ownerData.put("contrasena", owner.getPassword());
