@@ -53,6 +53,18 @@ public class SecurityConfig {
                 .requestMatchers("/api/users/externo").permitAll()
                 // abrir explícitamente los módulos (redundante con @PermitAll, pero recomendado)
                 .requestMatchers("/api/modulos/**").permitAll()
+                .requestMatchers(
+                    "/v3/api-docs/**",
+                    "/swagger-ui/**",
+                    "/swagger-ui.html",
+                    "/swagger-resources/**",
+                    "/webjars/**",
+                    "/error"
+                ).permitAll()
+
+                .requestMatchers("/error").permitAll()
+                // Las rutas de la API principal, si usas SpringDoc o similar:
+                .requestMatchers("/v3/api-docs").permitAll()
                 // el resto autenticado
                 .anyRequest().authenticated()
             );

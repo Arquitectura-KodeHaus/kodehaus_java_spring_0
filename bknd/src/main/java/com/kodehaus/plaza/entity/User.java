@@ -68,7 +68,7 @@ public class User implements UserDetails {
     private LocalDateTime updatedAt;
     
     // Relationship with Plaza
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "plaza_id", nullable = false)
     private Plaza plaza;
     
