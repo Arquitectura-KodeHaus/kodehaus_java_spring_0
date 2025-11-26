@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { jwtDecode } from 'jwt-decode';
-import { environment } from '../../environments/environment.prod';
+import { environment } from '../../environments/environment';
 import { ModuleService } from './module.service';
 
 /**

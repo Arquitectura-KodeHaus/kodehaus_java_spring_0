@@ -14,14 +14,18 @@ export interface ModuleDto {
 
 @Injectable({ providedIn: 'root' })
 export class ModuleService {
-  private readonly API_URL = 'https://stocks-backend-service-616328447495.us-central1.run.app/api';
+  private readonly API_URL = environment.apiUrl;
   private modules: ModuleDto[] = [];
 
   constructor(private http: HttpClient) {}
 
   getModules(): Observable<any[]> {
     const externalId = localStorage.getItem('external_id');
-    return this.http.get<any[]>(`${this.API_URL}/modulos/plaza/${externalId}`);
+    // Backend permite libremente /api/modulos/**; usamos esa ruta para evitar 401 por whitelist.
+    const base = `${this.API_URL}/modulos`;
+    const url = externalId ? `${base}/plaza/${externalId}` : base;
+
+    return this.http.get<any[]>(url);
   }
 
   /**
