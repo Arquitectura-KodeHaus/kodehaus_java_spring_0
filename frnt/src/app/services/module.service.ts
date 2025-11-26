@@ -21,9 +21,9 @@ export class ModuleService {
 
   getModules(): Observable<any[]> {
     const externalId = localStorage.getItem('external_id');
-    const url = externalId
-      ? `${this.API_URL}/modules/plaza/${externalId}`
-      : `${this.API_URL}/modules`;
+    // Backend permite libremente /api/modulos/**; usamos esa ruta para evitar 401 por whitelist.
+    const base = `${this.API_URL}/modulos`;
+    const url = externalId ? `${base}/plaza/${externalId}` : base;
 
     return this.http.get<any[]>(url);
   }
