@@ -136,6 +136,7 @@ export class AuthService {
           // Guardar token y usuario en localStorage
           localStorage.setItem(this.TOKEN_KEY, response.accessToken);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
           localStorage.setItem('external_id', response.externalId);
           localStorage.setItem(this.USER_KEY, JSON.stringify(response));
           
@@ -153,6 +154,11 @@ export class AuthService {
             plazaName: response.plazaName,
             permissions: this.mapRolesToPermissions(response.roles)
           };
+=======
+          const decoded = this.decodeToken(response.accessToken);
+          const user: User = this.buildUser(response, decoded);
+          localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+>>>>>>> Stashed changes
 =======
           const decoded = this.decodeToken(response.accessToken);
           const user: User = this.buildUser(response, decoded);
