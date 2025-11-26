@@ -239,17 +239,15 @@ public class StoreController {
         
         // Call external store management service to create owner profile (non-blocking)
         try {
-            if (store.getExternalId() != null && currentUser.getPlaza().getExternalId() != null) {
+            if (currentUser.getPlaza().getExternalId() != null) {
                 Map<String, Object> ownerData = new HashMap<>();
-                ownerData.put("username", savedOwner.getUsername());
-                ownerData.put("email", savedOwner.getEmail());
-                ownerData.put("firstName", savedOwner.getFirstName());
-                ownerData.put("lastName", savedOwner.getLastName());
-                ownerData.put("phoneNumber", savedOwner.getPhoneNumber());
-                ownerData.put("storeExternalId", store.getExternalId());
-                ownerData.put("plazaExternalId", currentUser.getPlaza().getExternalId());
+                ownerData.put("nombreUsuario", savedOwner.getUsername());
+                ownerData.put("contrasena", owner.getPassword());
+                ownerData.put("cedula", savedOwner.getFirstName());
+                ownerData.put("idLocal", savedOwner.getStore().getId());
                 
-                ResponseEntity<Map<String, Object>> externalResponse = storeManagementService.createStoreOwnerProfile(store.getExternalId(), ownerData);
+                
+                ResponseEntity<Map<String, Object>> externalResponse = storeManagementService.createStoreOwnerProfile(ownerData);
                 
                 if (externalResponse != null && externalResponse.getStatusCode().is2xxSuccessful()) {
                     System.out.println("Store owner profile created in external service successfully");

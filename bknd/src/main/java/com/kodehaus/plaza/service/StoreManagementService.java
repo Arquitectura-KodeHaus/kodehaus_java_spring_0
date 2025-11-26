@@ -63,9 +63,9 @@ public class StoreManagementService {
      * @param ownerData Owner profile data
      * @return Response from external system
      */
-    public ResponseEntity<Map<String, Object>> createStoreOwnerProfile(String storeExternalId, Map<String, Object> ownerData) {
+    public ResponseEntity<Map<String, Object>> createStoreOwnerProfile(Map<String, Object> ownerData) {
         try {
-            String url = storeManagementUrl + "/api/stores/" + storeExternalId + "/owner";
+            String url = storeManagementUrl + "/api/Auth/register/admin";
             
             HttpHeaders headers = new HttpHeaders();
             headers.set("Content-Type", "application/json");
