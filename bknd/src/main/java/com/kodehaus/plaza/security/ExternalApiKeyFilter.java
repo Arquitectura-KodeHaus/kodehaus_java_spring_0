@@ -19,12 +19,6 @@ public class ExternalApiKeyFilter extends OncePerRequestFilter {
     @Value("${external.api.key}")
     private String externalApiKey;
 
-    private final AntPathMatcher pathMatcher = new AntPathMatcher();
-
-    private static final List<String> PROTECTED_PATHS = Arrays.asList(
-            "/api/plazas/externo",
-            "/api/users/externo"
-    );
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)

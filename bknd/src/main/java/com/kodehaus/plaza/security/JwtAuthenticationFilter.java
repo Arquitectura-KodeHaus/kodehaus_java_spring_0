@@ -41,6 +41,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final List<String> PUBLIC_PATHS = Arrays.asList(
         "/actuator/**",
         "/api/auth/**",
+        "/api/plazas/externo",
         "/api/managers/register",
         "/h2-console/**",
         "/error",
