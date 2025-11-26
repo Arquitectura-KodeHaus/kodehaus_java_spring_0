@@ -41,8 +41,8 @@ export interface Role {
   providedIn: 'root'
 })
 export class UserService {
-  private readonly API_URL = `${environment.apiUrl}/api/users`;
-  private readonly ROLES_URL = `${environment.apiUrl}/api/roles`;
+  private readonly API_URL = `${environment.apiUrl}/users`;
+  private readonly ROLES_URL = `${environment.apiUrl}/roles`;
 
   constructor(private http: HttpClient) {}
 
