@@ -108,25 +108,17 @@ public class StoreController {
         // Call external store management service (non-blocking)
         try {
             Map<String, Object> storeData = new HashMap<>();
-            storeData.put("name", savedStore.getName());
-            storeData.put("description", savedStore.getDescription());
-            storeData.put("ownerName", savedStore.getOwnerName());
-            storeData.put("phoneNumber", savedStore.getPhoneNumber());
-            storeData.put("email", savedStore.getEmail());
-            if (currentUser.getPlaza().getExternalId() != null) {
-                storeData.put("plazaExternalId", currentUser.getPlaza().getExternalId());
-            }
-            storeData.put("storeId", savedStore.getId());
+            storeData.put("nombre", savedStore.getName());
+            storeData.put("categoria", savedStore.getDescription());
+            storeData.put("numeroLocal", savedStore.getOwnerName());
+            storeData.put("estado", "Activo");
+            storeData.put("externalId", savedStore.getId());
             
             ResponseEntity<Map<String, Object>> externalResponse = storeManagementService.createStore(storeData);
             
             // If external service returns an external ID, update the store
             if (externalResponse != null && externalResponse.getStatusCode().is2xxSuccessful() && externalResponse.getBody() != null) {
-                Map<String, Object> responseBody = externalResponse.getBody();
-                if (responseBody.containsKey("externalId")) {
-                    savedStore.setExternalId(responseBody.get("externalId").toString());
-                    savedStore = storeRepository.save(savedStore);
-                }
+                return ResponseEntity.status(HttpStatus.CREATED).body(convertToResponseDto(savedStore));
             } else {
                 System.out.println("External store management service returned non-2xx response or no body");
             }

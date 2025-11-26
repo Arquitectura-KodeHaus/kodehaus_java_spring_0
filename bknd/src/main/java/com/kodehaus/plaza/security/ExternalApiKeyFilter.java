@@ -34,6 +34,17 @@ public class ExternalApiKeyFilter extends OncePerRequestFilter {
         /*
         String path = request.getRequestURI();
 
+         // 🔥 Ignorar Swagger UI y OpenAPI
+        if (path.startsWith("/swagger")
+                || path.equals("/swagger-ui.html")
+                || path.startsWith("/v3/api-docs")
+                || path.startsWith("/swagger-resources")
+                || path.startsWith("/webjars")) {
+
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         boolean shouldProtect = PROTECTED_PATHS.stream().anyMatch(p -> pathMatcher.match(p, path));
 
         if (shouldProtect) {

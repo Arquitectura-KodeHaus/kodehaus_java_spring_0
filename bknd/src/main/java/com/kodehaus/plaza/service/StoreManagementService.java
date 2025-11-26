@@ -17,7 +17,7 @@ import java.util.Map;
 @Service
 public class StoreManagementService {
     
-    @Value("${external.store-management.url:http://localhost:8081}")
+    @Value("${external.store-management.url:http://localhost:8090}")
     private String storeManagementUrl;
     
     @Value("${external.store-management.api-key:}")
@@ -36,7 +36,7 @@ public class StoreManagementService {
      */
     public ResponseEntity<Map<String, Object>> createStore(Map<String, Object> storeData) {
         try {
-            String url = storeManagementUrl + "/api/stores";
+            String url = storeManagementUrl + "/api/Locales";
             
             HttpHeaders headers = new HttpHeaders();
             headers.set("Content-Type", "application/json");
