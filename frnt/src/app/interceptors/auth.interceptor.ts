@@ -14,16 +14,27 @@ export class AuthInterceptor implements HttpInterceptor {
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     const token = this.authService.getToken();
 
-    // Si hay token, clonar la request y añadir el header Authorization
-    const request = token
+    // Skip adding token to login/auth endpoints (they don't need it)
+    const isAuthEndpoint = req.url.includes('/auth/login') || req.url.includes('/auth/external-register');
+
+    // Si hay token y no es un endpoint de autenticación, clonar la request y añadir el header Authorization
+    const request = token && !isAuthEndpoint
       ? req.clone({
           setHeaders: { Authorization: `Bearer ${token}` }
         })
       : req;
 
+    // Log for debugging (can be removed in production)
+    if (token && !isAuthEndpoint) {
+      console.log('🔑 AuthInterceptor: Adding token to request:', req.url);
+    } else if (!token && !isAuthEndpoint) {
+      console.warn('⚠️ AuthInterceptor: No token available for request:', req.url);
+    }
+
     return next.handle(request).pipe(
       catchError((error: HttpErrorResponse) => {
         if (error.status === 401 || error.status === 403) {
+          console.error('❌ AuthInterceptor: Unauthorized/Forbidden - logging out');
           // Token inválido/expirado o sin permisos: limpiar sesión y redirigir a login
           this.authService.logout();
         }
