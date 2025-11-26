@@ -30,9 +30,12 @@ export interface LoginResponse {
  */
 interface JwtPayload {
   sub: string; // username
-  roles: string[];
+  roles?: string[];
   exp: number; // expiration timestamp
   iat: number; // issued at timestamp
+  plazaId?: number;
+  plazaName?: string;
+  userId?: number;
 }
 
 /**
@@ -71,6 +74,41 @@ export class AuthService {
   }
   
   /**
+   * Decodifica el JWT y devuelve su payload ya tipado
+   */
+  private decodeToken(token: string): JwtPayload | null {
+    try {
+      return jwtDecode<JwtPayload>(token);
+    } catch (error) {
+      console.error('Error decodificando token:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Normaliza la información del usuario combinando lo que llega del backend y lo que vive en el JWT
+   */
+  private buildUser(payload: Partial<LoginResponse> | null, decoded: JwtPayload | null): User {
+    const roles = decoded?.roles ?? payload?.roles ?? [];
+    const firstName = payload?.firstName ?? '';
+    const lastName = payload?.lastName ?? '';
+    const fullName = payload?.fullName ?? `${firstName} ${lastName}`.trim();
+
+    return {
+      id: payload?.id ?? decoded?.userId ?? 0,
+      username: payload?.username ?? decoded?.sub ?? '',
+      email: payload?.email ?? '',
+      firstName,
+      lastName,
+      fullName,
+      roles,
+      plazaId: decoded?.plazaId ?? payload?.plazaId,
+      plazaName: payload?.plazaName ?? decoded?.plazaName,
+      permissions: this.mapRolesToPermissions(roles)
+    };
+  }
+
+  /**
    * Lazy load ModuleService to avoid circular dependency
    */
   private getModuleService(): ModuleService {
@@ -97,6 +135,7 @@ export class AuthService {
           
           // Guardar token y usuario en localStorage
           localStorage.setItem(this.TOKEN_KEY, response.accessToken);
+<<<<<<< Updated upstream
           localStorage.setItem('external_id', response.externalId);
           localStorage.setItem(this.USER_KEY, JSON.stringify(response));
           
@@ -114,6 +153,11 @@ export class AuthService {
             plazaName: response.plazaName,
             permissions: this.mapRolesToPermissions(response.roles)
           };
+=======
+          const decoded = this.decodeToken(response.accessToken);
+          const user: User = this.buildUser(response, decoded);
+          localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+>>>>>>> Stashed changes
 
           this.userSubject.next(user);
           
@@ -188,14 +232,13 @@ export class AuthService {
       return false;
     }
 
-    try {
-      const decoded = jwtDecode<JwtPayload>(token);
-      const currentTime = Math.floor(Date.now() / 1000);
-      return decoded.exp > currentTime;
-    } catch (error) {
-      console.error('Error decodificando token:', error);
+    const decoded = this.decodeToken(token);
+    if (!decoded) {
       return false;
     }
+
+    const currentTime = Math.floor(Date.now() / 1000);
+    return decoded.exp > currentTime;
   }
 
   /**
@@ -211,19 +254,34 @@ export class AuthService {
    */
   private loadUserFromStorage(): void {
     const token = this.getToken();
-    const userData = localStorage.getItem(this.USER_KEY);
+    if (!token) {
+      return;
+    }
 
-    if (token && userData && this.isLoggedIn()) {
+    const decoded = this.decodeToken(token);
+    if (!decoded) {
+      this.logout();
+      return;
+    }
+
+    const currentTime = Math.floor(Date.now() / 1000);
+    if (decoded.exp <= currentTime) {
+      this.logout();
+      return;
+    }
+
+    let payload: Partial<LoginResponse> | null = null;
+    const userData = localStorage.getItem(this.USER_KEY);
+    if (userData) {
       try {
-        const user: User = JSON.parse(userData);
-        this.userSubject.next(user);
+        payload = JSON.parse(userData);
       } catch (error) {
         console.error('Error cargando usuario del storage:', error);
       }
-    } else if (token && !this.isLoggedIn()) {
-      // Token expirado
-      this.logout();
     }
+
+    const user = this.buildUser(payload, decoded);
+    this.userSubject.next(user);
   }
 
   /**

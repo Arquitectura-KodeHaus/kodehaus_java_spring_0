@@ -66,6 +66,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (StringUtils.hasText(jwt)) {
                 if (tokenProvider.validateToken(jwt)) {
                     String username = tokenProvider.getUsernameFromToken(jwt);
+                    Long plazaId = tokenProvider.getPlazaIdFromToken(jwt);
+                    if (plazaId != null) {
+                        request.setAttribute("plazaId", plazaId); // Middleware hook: plaza del usuario desde el JWT
+                    }
                     
                     UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
                     UsernamePasswordAuthenticationToken authentication = 

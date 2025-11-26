@@ -1,10 +1,13 @@
 package com.kodehaus.plaza.controller;
 
 import com.kodehaus.plaza.entity.Plaza;
+import com.kodehaus.plaza.entity.User;
 import com.kodehaus.plaza.repository.PlazaRepository;
 // Lombok annotations removed for compatibility
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,6 +28,7 @@ public class PlazaController {
     }
     
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PlazaResponseDto> createPlaza(@RequestBody PlazaCreateRequest req) {
         // Log para depuración
         System.out.println("POST /api/plazas received: " + req);
@@ -104,7 +108,15 @@ public class PlazaController {
     }
     
     @PutMapping("/{id}")
-    public ResponseEntity<PlazaResponseDto> updatePlaza(@PathVariable Long id, @RequestBody PlazaUpdateRequest req) {
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<PlazaResponseDto> updatePlaza(@PathVariable Long id, @RequestBody PlazaUpdateRequest req,
+                                                        Authentication authentication) {
+        User currentUser = (User) authentication.getPrincipal();
+        boolean isAdmin = hasRole(currentUser, "ADMIN");
+        if (!isAdmin && !belongsToUserPlaza(currentUser, id)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         return plazaRepository.findById(id)
             .filter(plaza -> plaza.getIsActive())
             .map(plaza -> {
@@ -191,8 +203,19 @@ public class PlazaController {
     }
     
     @GetMapping
-    public ResponseEntity<List<PlazaResponseDto>> getAllPlazas() {
-        List<Plaza> plazas = plazaRepository.findByIsActiveTrue();
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE_GENERAL', 'EMPLOYEE_SECURITY', 'EMPLOYEE_PARKING')")
+    public ResponseEntity<List<PlazaResponseDto>> getAllPlazas(Authentication authentication) {
+        User currentUser = (User) authentication.getPrincipal();
+        boolean isAdmin = hasRole(currentUser, "ADMIN");
+
+        List<Plaza> plazas;
+        if (isAdmin) {
+            plazas = plazaRepository.findByIsActiveTrue();
+        } else if (currentUser.getPlaza() != null && Boolean.TRUE.equals(currentUser.getPlaza().getIsActive())) {
+            plazas = List.of(currentUser.getPlaza());
+        } else {
+            plazas = List.of();
+        }
         
         List<PlazaResponseDto> response = plazas.stream()
             .map(this::convertToResponseDto)
@@ -202,7 +225,14 @@ public class PlazaController {
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<PlazaResponseDto> getPlazaById(@PathVariable Long id) {
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE_GENERAL', 'EMPLOYEE_SECURITY', 'EMPLOYEE_PARKING')")
+    public ResponseEntity<PlazaResponseDto> getPlazaById(@PathVariable Long id, Authentication authentication) {
+        User currentUser = (User) authentication.getPrincipal();
+        boolean isAdmin = hasRole(currentUser, "ADMIN");
+        if (!isAdmin && !belongsToUserPlaza(currentUser, id)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         return plazaRepository.findById(id)
             .filter(plaza -> plaza.getIsActive())
             .map(plaza -> ResponseEntity.ok(convertToResponseDto(plaza)))
@@ -210,8 +240,21 @@ public class PlazaController {
     }
     
     @GetMapping("/search")
-    public ResponseEntity<List<PlazaResponseDto>> searchPlazas(@RequestParam String name) {
-        List<Plaza> plazas = plazaRepository.findByNameContainingIgnoreCase(name);
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE_GENERAL', 'EMPLOYEE_SECURITY', 'EMPLOYEE_PARKING')")
+    public ResponseEntity<List<PlazaResponseDto>> searchPlazas(@RequestParam String name, Authentication authentication) {
+        User currentUser = (User) authentication.getPrincipal();
+        boolean isAdmin = hasRole(currentUser, "ADMIN");
+
+        List<Plaza> plazas;
+        if (isAdmin) {
+            plazas = plazaRepository.findByNameContainingIgnoreCase(name);
+        } else if (currentUser.getPlaza() != null && Boolean.TRUE.equals(currentUser.getPlaza().getIsActive())) {
+            Plaza userPlaza = currentUser.getPlaza();
+            boolean matches = userPlaza.getName() != null && userPlaza.getName().toLowerCase().contains(name.toLowerCase());
+            plazas = matches ? List.of(userPlaza) : List.of();
+        } else {
+            plazas = List.of();
+        }
         
         List<PlazaResponseDto> response = plazas.stream()
             .map(this::convertToResponseDto)
@@ -236,6 +279,16 @@ public class PlazaController {
         dto.setUpdatedAt(plaza.getUpdatedAt());
         
         return dto;
+    }
+
+    private boolean hasRole(User user, String roleName) {
+        return user.getRoles() != null &&
+               user.getRoles().stream().anyMatch(role -> roleName.equalsIgnoreCase(role.getName()));
+    }
+
+    private boolean belongsToUserPlaza(User user, Long plazaId) {
+        return user.getPlaza() != null && user.getPlaza().getId() != null &&
+            user.getPlaza().getId().equals(plazaId);
     }
 
     // DTOs for external endpoint
