@@ -18,7 +18,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Set;
@@ -59,19 +58,16 @@ public class AuthController {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PlazaRepository plazaRepository;
-    private final PasswordEncoder passwordEncoder;
     
     public AuthController(AuthenticationManager authenticationManager, JwtTokenProvider tokenProvider,
                          CustomUserDetailsService userDetailsService, UserRepository userRepository,
-                         RoleRepository roleRepository, PlazaRepository plazaRepository,
-                         PasswordEncoder passwordEncoder) {
+                         RoleRepository roleRepository, PlazaRepository plazaRepository) {
         this.authenticationManager = authenticationManager;
         this.tokenProvider = tokenProvider;
         this.userDetailsService = userDetailsService;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.plazaRepository = plazaRepository;
-        this.passwordEncoder = passwordEncoder;
     }
     
     @PostMapping("/login")
@@ -188,7 +184,7 @@ public class AuthController {
         User user = new User();
         user.setUsername(registerRequest.getUsername());
         user.setEmail(registerRequest.getEmail());
-        user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
+        user.setPassword(registerRequest.getPassword()); // Password stored as-is (not encoded)
         user.setFirstName(registerRequest.getFirstName());
         user.setLastName(registerRequest.getLastName());
         user.setPhoneNumber(registerRequest.getPhoneNumber());
