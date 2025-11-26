@@ -2,6 +2,11 @@ package com.kodehaus.plaza.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.gson.GsonFactory;
+import java.util.Collections;
 // Lombok annotations removed for compatibility
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -37,15 +42,17 @@ public class JwtTokenProvider {
         Long plazaId = null;
         String plazaName = null;
         java.util.UUID plazaUuid = null;
-        List<String> roles = null;
+        List<String> roles = Collections.emptyList();
+        Long userId = null;
         if (userPrincipal instanceof User) {
             User u = (User) userPrincipal;
+            userId = u.getId();
             if (u.getPlaza() != null) {
                 plazaId = u.getPlaza().getId();
                 plazaName = u.getPlaza().getName();
                 plazaUuid = u.getPlaza().getUuid();
             }
-            if (u.getRoles() != null) {
+            if (u.getRoles() != null && !u.getRoles().isEmpty()) {
                 roles = u.getRoles().stream().map(r -> r.getName()).collect(Collectors.toList());
             }
         }
@@ -55,9 +62,10 @@ public class JwtTokenProvider {
                 .subject(userPrincipal.getUsername())
                 .issuedAt(new Date())
                 .expiration(expiryDate)
-                .claim("roles", roles)
                 .signWith(getSigningKey());
 
+        builder.claim("roles", roles);
+        if (userId != null) builder.claim("userId", userId);
         if (plazaId != null) builder.claim("plazaId", plazaId);
         if (plazaName != null) builder.claim("plazaName", plazaName);
         if (plazaUuid != null) builder.claim("plazaUuid", plazaUuid.toString());
@@ -168,5 +176,22 @@ public class JwtTokenProvider {
     public Boolean isTokenExpired(String token) {
         final Date expiration = getExpirationDateFromToken(token);
         return expiration.before(new Date());
+    }
+
+    /**
+     * Verify Google ID Token and return email
+     */
+    public String getEmailFromGoogleToken(String token) {
+        try {
+            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory())
+                .build();
+            GoogleIdToken idToken = verifier.verify(token);
+            if (idToken != null) {
+                return idToken.getPayload().getEmail();
+            }
+        } catch (Exception e) {
+            // Token invalid or verification failed
+        }
+        return null;
     }
 }

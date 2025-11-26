@@ -51,8 +51,10 @@ public class SecurityConfig {
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/api/plazas/externo").permitAll()
                 .requestMatchers("/api/users/externo").permitAll()
+                .requestMatchers("/api/managers/register").permitAll()
                 // abrir explícitamente los módulos (redundante con @PermitAll, pero recomendado)
                 .requestMatchers("/api/modulos/**").permitAll()
+<<<<<<< HEAD
                 .requestMatchers(
                     "/v3/api-docs/**",
                     "/swagger-ui/**",
@@ -66,12 +68,16 @@ public class SecurityConfig {
                 // Las rutas de la API principal, si usas SpringDoc o similar:
                 .requestMatchers("/v3/api-docs").permitAll()
                 // el resto autenticado
+=======
+                // el resto requiere autenticación JWT
+>>>>>>> main
                 .anyRequest().authenticated()
             );
 
-        // Orden de filtros: API Key antes de JWT; JWT antes de UsernamePasswordAuthenticationFilter no es necesario
-        http.addFilterBefore(externalApiKeyFilter, UsernamePasswordAuthenticationFilter.class);
-        http.addFilterAfter(jwtAuthenticationFilter, ExternalApiKeyFilter.class);
+        // Orden de filtros: API Key antes de JWT; JWT antes de UsernamePasswordAuthenticationFilter
+        // http.addFilterBefore(externalApiKeyFilter, UsernamePasswordAuthenticationFilter.class);
+        // http.addFilterAfter(jwtAuthenticationFilter, ExternalApiKeyFilter.class);
+        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

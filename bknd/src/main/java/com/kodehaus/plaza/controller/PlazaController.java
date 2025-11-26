@@ -1,10 +1,13 @@
 package com.kodehaus.plaza.controller;
 
 import com.kodehaus.plaza.entity.Plaza;
+import com.kodehaus.plaza.entity.User;
 import com.kodehaus.plaza.repository.PlazaRepository;
 // Lombok annotations removed for compatibility
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,11 +28,22 @@ public class PlazaController {
     }
     
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PlazaResponseDto> createPlaza(@RequestBody PlazaCreateRequest req) {
+        // Log para depuración
+        System.out.println("POST /api/plazas received: " + req);
+
         // Validaciones simples
-        if (req.getName() == null || req.getName().isBlank() ||
-            req.getAddress() == null || req.getAddress().isBlank() ||
-            req.getPhoneNumber() == null || req.getPhoneNumber().isBlank()) {
+        if (req.getName() == null || req.getName().isBlank()) {
+            System.out.println("Validation Error: Name is required");
+            return ResponseEntity.badRequest().build();
+        }
+        if (req.getAddress() == null || req.getAddress().isBlank()) {
+            System.out.println("Validation Error: Address is required");
+            return ResponseEntity.badRequest().build();
+        }
+        if (req.getPhoneNumber() == null || req.getPhoneNumber().isBlank()) {
+            System.out.println("Validation Error: PhoneNumber is required");
             return ResponseEntity.badRequest().build();
         }
 
@@ -42,6 +56,13 @@ public class PlazaController {
         plaza.setOpeningHours(req.getOpeningHours());
         plaza.setClosingHours(req.getClosingHours());
         plaza.setIsActive(true);
+        
+        // Usar externalId si viene en el request, sino generar UUID
+        if (req.getExternalId() != null && !req.getExternalId().isBlank()) {
+            plaza.setExternalId(req.getExternalId());
+        } else {
+            plaza.setExternalId(java.util.UUID.randomUUID().toString());
+        }
 
         Plaza saved = plazaRepository.save(plaza);
         return ResponseEntity.ok(convertToResponseDto(saved));
@@ -87,7 +108,15 @@ public class PlazaController {
     }
     
     @PutMapping("/{id}")
-    public ResponseEntity<PlazaResponseDto> updatePlaza(@PathVariable Long id, @RequestBody PlazaUpdateRequest req) {
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<PlazaResponseDto> updatePlaza(@PathVariable Long id, @RequestBody PlazaUpdateRequest req,
+                                                        Authentication authentication) {
+        User currentUser = (User) authentication.getPrincipal();
+        boolean isAdmin = hasRole(currentUser, "ADMIN");
+        if (!isAdmin && !belongsToUserPlaza(currentUser, id)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         return plazaRepository.findById(id)
             .filter(plaza -> plaza.getIsActive())
             .map(plaza -> {
@@ -132,6 +161,7 @@ public class PlazaController {
     
     // DTO para creación
     public static class PlazaCreateRequest {
+        private String externalId; // Campo opcional para ID externo
         private String name;
         private String description;
         private String address;
@@ -140,6 +170,8 @@ public class PlazaController {
         private String openingHours; // formato HH:mm
         private String closingHours; // formato HH:mm
 
+        public String getExternalId() { return externalId; }
+        public void setExternalId(String externalId) { this.externalId = externalId; }
         public String getName() { return name; }
         public void setName(String name) { this.name = name; }
         public String getDescription() { return description; }
@@ -154,11 +186,36 @@ public class PlazaController {
         public void setOpeningHours(String openingHours) { this.openingHours = openingHours; }
         public String getClosingHours() { return closingHours; }
         public void setClosingHours(String closingHours) { this.closingHours = closingHours; }
+
+        @Override
+        public String toString() {
+            return "PlazaCreateRequest{" +
+                    "externalId='" + externalId + '\'' +
+                    ", name='" + name + '\'' +
+                    ", description='" + description + '\'' +
+                    ", address='" + address + '\'' +
+                    ", phoneNumber='" + phoneNumber + '\'' +
+                    ", email='" + email + '\'' +
+                    ", openingHours='" + openingHours + '\'' +
+                    ", closingHours='" + closingHours + '\'' +
+                    '}';
+        }
     }
     
     @GetMapping
-    public ResponseEntity<List<PlazaResponseDto>> getAllPlazas() {
-        List<Plaza> plazas = plazaRepository.findByIsActiveTrue();
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE_GENERAL', 'EMPLOYEE_SECURITY', 'EMPLOYEE_PARKING')")
+    public ResponseEntity<List<PlazaResponseDto>> getAllPlazas(Authentication authentication) {
+        User currentUser = (User) authentication.getPrincipal();
+        boolean isAdmin = hasRole(currentUser, "ADMIN");
+
+        List<Plaza> plazas;
+        if (isAdmin) {
+            plazas = plazaRepository.findByIsActiveTrue();
+        } else if (currentUser.getPlaza() != null && Boolean.TRUE.equals(currentUser.getPlaza().getIsActive())) {
+            plazas = List.of(currentUser.getPlaza());
+        } else {
+            plazas = List.of();
+        }
         
         List<PlazaResponseDto> response = plazas.stream()
             .map(this::convertToResponseDto)
@@ -168,7 +225,14 @@ public class PlazaController {
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<PlazaResponseDto> getPlazaById(@PathVariable Long id) {
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE_GENERAL', 'EMPLOYEE_SECURITY', 'EMPLOYEE_PARKING')")
+    public ResponseEntity<PlazaResponseDto> getPlazaById(@PathVariable Long id, Authentication authentication) {
+        User currentUser = (User) authentication.getPrincipal();
+        boolean isAdmin = hasRole(currentUser, "ADMIN");
+        if (!isAdmin && !belongsToUserPlaza(currentUser, id)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         return plazaRepository.findById(id)
             .filter(plaza -> plaza.getIsActive())
             .map(plaza -> ResponseEntity.ok(convertToResponseDto(plaza)))
@@ -176,8 +240,21 @@ public class PlazaController {
     }
     
     @GetMapping("/search")
-    public ResponseEntity<List<PlazaResponseDto>> searchPlazas(@RequestParam String name) {
-        List<Plaza> plazas = plazaRepository.findByNameContainingIgnoreCase(name);
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE_GENERAL', 'EMPLOYEE_SECURITY', 'EMPLOYEE_PARKING')")
+    public ResponseEntity<List<PlazaResponseDto>> searchPlazas(@RequestParam String name, Authentication authentication) {
+        User currentUser = (User) authentication.getPrincipal();
+        boolean isAdmin = hasRole(currentUser, "ADMIN");
+
+        List<Plaza> plazas;
+        if (isAdmin) {
+            plazas = plazaRepository.findByNameContainingIgnoreCase(name);
+        } else if (currentUser.getPlaza() != null && Boolean.TRUE.equals(currentUser.getPlaza().getIsActive())) {
+            Plaza userPlaza = currentUser.getPlaza();
+            boolean matches = userPlaza.getName() != null && userPlaza.getName().toLowerCase().contains(name.toLowerCase());
+            plazas = matches ? List.of(userPlaza) : List.of();
+        } else {
+            plazas = List.of();
+        }
         
         List<PlazaResponseDto> response = plazas.stream()
             .map(this::convertToResponseDto)
@@ -189,6 +266,7 @@ public class PlazaController {
     private PlazaResponseDto convertToResponseDto(Plaza plaza) {
         PlazaResponseDto dto = new PlazaResponseDto();
         dto.setId(plaza.getId());
+        dto.setExternalId(plaza.getExternalId());
         dto.setName(plaza.getName());
         dto.setDescription(plaza.getDescription());
         dto.setAddress(plaza.getAddress());
@@ -201,6 +279,16 @@ public class PlazaController {
         dto.setUpdatedAt(plaza.getUpdatedAt());
         
         return dto;
+    }
+
+    private boolean hasRole(User user, String roleName) {
+        return user.getRoles() != null &&
+               user.getRoles().stream().anyMatch(role -> roleName.equalsIgnoreCase(role.getName()));
+    }
+
+    private boolean belongsToUserPlaza(User user, Long plazaId) {
+        return user.getPlaza() != null && user.getPlaza().getId() != null &&
+            user.getPlaza().getId().equals(plazaId);
     }
 
     // DTOs for external endpoint
@@ -251,6 +339,7 @@ public class PlazaController {
     // Inner class for plaza responses
     public static class PlazaResponseDto {
         private Long id;
+        private String externalId;
         private String name;
         private String description;
         private String address;
@@ -265,6 +354,9 @@ public class PlazaController {
         // Getters and setters
         public Long getId() { return id; }
         public void setId(Long id) { this.id = id; }
+
+        public String getExternalId() { return externalId; }
+        public void setExternalId(String externalId) { this.externalId = externalId; }
         
         public String getName() { return name; }
         public void setName(String name) { this.name = name; }

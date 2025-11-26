@@ -39,26 +39,15 @@ export class PlazaComponent implements OnInit {
       this.form.disable({ emitEvent: false });
     }
 
-    const plazaId = this.auth.plazaId;
-    if (plazaId) {
-      this.plazaService.getPlaza(plazaId).subscribe({
-        next: (plaza) => {
-          this.plazas = [plaza];
-          this.startEdit(plaza);
-        },
-        error: (err) => console.error('Error cargando plaza del usuario', err)
-      });
-    } else {
-      this.plazaService.getPlazas().subscribe({
-        next: (data: PlazaDto[]) => {
-          this.plazas = data;
-          if (this.plazas.length > 0) {
-            this.startEdit(this.plazas[0]);
-          }
-        },
-        error: (err: any) => console.error('Error cargando plazas', err)
-      });
-    }
+    this.plazaService.getPlazas().subscribe({
+      next: (data: PlazaDto[]) => {
+        this.plazas = data;
+        if (this.plazas.length > 0) {
+          this.startEdit(this.plazas[0]);
+        }
+      },
+      error: (err: any) => console.error('Error cargando plazas', err)
+    });
   }
 
   startEdit(plaza?: PlazaDto) {

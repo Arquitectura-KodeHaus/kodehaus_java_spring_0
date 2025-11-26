@@ -30,6 +30,8 @@ public class ExternalApiKeyFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
+        // DESACTIVADO PARA DESARROLLO
+        /*
         String path = request.getRequestURI();
 
          // 🔥 Ignorar Swagger UI y OpenAPI
@@ -54,6 +56,7 @@ public class ExternalApiKeyFilter extends OncePerRequestFilter {
                 return;
             }
         }
+        */
 
         filterChain.doFilter(request, response);
     }

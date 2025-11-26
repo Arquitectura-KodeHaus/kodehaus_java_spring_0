@@ -18,6 +18,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     /**
      * Find user by username
      */
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.plaza WHERE u.username = :username")
     Optional<User> findByUsername(String username);
     
     /**
@@ -98,4 +99,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
      */
     @Query("SELECT u FROM User u WHERE u.store.id = :storeId AND u.isActive = true")
     Optional<User> findStoreOwnerByStoreId(@Param("storeId") Long storeId);
+
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.plaza WHERE u.id = :id")
+    Optional<User> findByIdWithPlaza(@Param("id") Long id);
 }

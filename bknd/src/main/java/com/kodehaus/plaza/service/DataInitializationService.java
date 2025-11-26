@@ -120,6 +120,13 @@ public class DataInitializationService implements CommandLineRunner {
             Set<Permission> managerPermissions = new HashSet<>(permissionRepository.findByIsActiveTrue());
             managerRole.setPermissions(managerPermissions);
             roleRepository.save(managerRole);
+
+            // Administrator role (global access)
+            Role adminRole = new Role();
+            adminRole.setName("ADMIN");
+            adminRole.setDescription("Administrador con acceso global");
+            adminRole.setPermissions(new HashSet<>(permissionRepository.findByIsActiveTrue()));
+            roleRepository.save(adminRole);
             
             // Employee Security role
             Role securityRole = new Role();
