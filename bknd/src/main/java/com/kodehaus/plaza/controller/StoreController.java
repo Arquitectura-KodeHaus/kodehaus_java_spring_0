@@ -53,7 +53,7 @@ public class StoreController {
      * Get all stores for the authenticated user's plaza
      */
     @GetMapping
-    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN') or hasRole('STORE_OWNER')")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN') or hasRole('gerente') or hasRole('STORE_OWNER')")
     public ResponseEntity<List<StoreResponseDto>> getAllStores(Authentication authentication) {
         User currentUser = (User) authentication.getPrincipal();
         List<Store> stores = storeRepository.findByPlazaIdAndIsActiveTrue(currentUser.getPlaza().getId());
@@ -70,7 +70,7 @@ public class StoreController {
      * Get store by ID
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN') or hasRole('gerente')")
     public ResponseEntity<StoreResponseDto> getStoreById(@PathVariable Long id, Authentication authentication) {
         User currentUser = (User) authentication.getPrincipal();
         
@@ -83,7 +83,7 @@ public class StoreController {
      * Create a new store
      */
     @PostMapping
-    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN') or hasRole('gerente')")
     public ResponseEntity<StoreResponseDto> createStore(@Valid @RequestBody StoreRequestDto storeRequest,
                                                        Authentication authentication) {
         User currentUser = (User) authentication.getPrincipal();
@@ -135,7 +135,7 @@ public class StoreController {
      * Update store
      */
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN') or hasRole('gerente')")
     public ResponseEntity<StoreResponseDto> updateStore(@PathVariable Long id,
                                                        @Valid @RequestBody StoreRequestDto storeRequest,
                                                        Authentication authentication) {
@@ -165,7 +165,7 @@ public class StoreController {
      * Delete store (soft delete)
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN') or hasRole('gerente')")
     public ResponseEntity<Void> deleteStore(@PathVariable Long id, Authentication authentication) {
         User currentUser = (User) authentication.getPrincipal();
         
@@ -182,7 +182,7 @@ public class StoreController {
      * Create store owner profile
      */
     @PostMapping("/{storeId}/owner")
-    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN') or hasRole('gerente')")
     public ResponseEntity<UserResponseDto> createStoreOwner(@PathVariable Long storeId,
                                                            @Valid @RequestBody StoreOwnerRequestDto ownerRequest,
                                                            Authentication authentication) {

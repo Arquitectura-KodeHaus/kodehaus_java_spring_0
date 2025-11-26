@@ -6,6 +6,7 @@ import com.kodehaus.plaza.dto.UserRequestDto;
 import com.kodehaus.plaza.entity.Plaza;
 import com.kodehaus.plaza.entity.Role;
 import com.kodehaus.plaza.entity.User;
+import com.kodehaus.plaza.repository.PermissionRepository;
 import com.kodehaus.plaza.repository.PlazaRepository;
 import com.kodehaus.plaza.repository.RoleRepository;
 import com.kodehaus.plaza.repository.UserRepository;
@@ -58,16 +59,19 @@ public class AuthController {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PlazaRepository plazaRepository;
+    private final PermissionRepository permissionRepository;
     
     public AuthController(AuthenticationManager authenticationManager, JwtTokenProvider tokenProvider,
                          CustomUserDetailsService userDetailsService, UserRepository userRepository,
-                         RoleRepository roleRepository, PlazaRepository plazaRepository) {
+                         RoleRepository roleRepository, PlazaRepository plazaRepository,
+                         PermissionRepository permissionRepository) {
         this.authenticationManager = authenticationManager;
         this.tokenProvider = tokenProvider;
         this.userDetailsService = userDetailsService;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.plazaRepository = plazaRepository;
+        this.permissionRepository = permissionRepository;
     }
     
     @PostMapping("/login")
@@ -191,13 +195,18 @@ public class AuthController {
         user.setPlaza(plaza); // Use the plaza found by externalId (with its internal ID)
         user.setIsActive(true);
         
-        // Always assign "gerente" role (create it if it doesn't exist)
+        // Always assign "gerente" role (create it if it doesn't exist with all permissions)
         Role gerenteRole = roleRepository.findByName("gerente").orElse(null);
         if (gerenteRole == null) {
-            // Create the "gerente" role if it doesn't exist
+            // Create the "gerente" role if it doesn't exist with all permissions
             gerenteRole = new Role();
             gerenteRole.setName("gerente");
+            gerenteRole.setDescription("Gerente de plaza con acceso completo");
             gerenteRole.setIsActive(true);
+            // Assign all permissions to gerente role
+            Set<com.kodehaus.plaza.entity.Permission> allPermissions = 
+                new java.util.HashSet<>(permissionRepository.findByIsActiveTrue());
+            gerenteRole.setPermissions(allPermissions);
             gerenteRole = roleRepository.save(gerenteRole);
         }
         user.setRoles(Set.of(gerenteRole));

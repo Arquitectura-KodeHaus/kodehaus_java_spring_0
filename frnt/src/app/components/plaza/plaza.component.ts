@@ -39,6 +39,29 @@ export class PlazaComponent implements OnInit {
       this.form.disable({ emitEvent: false });
     }
 
+    // In a single-plaza system, get the user's plaza from login response
+    // If we have plazaId, fetch just that plaza; otherwise fetch all (which will return only user's plaza)
+    const user = this.auth.getUser();
+    if (user && user.plazaId) {
+      // Fetch only the user's plaza
+      this.plazaService.getPlaza(user.plazaId).subscribe({
+        next: (plaza: PlazaDto) => {
+          this.plazas = [plaza];
+          this.startEdit(plaza);
+        },
+        error: (err: any) => {
+          console.error('Error cargando plaza del usuario', err);
+          // Fallback: try to get all plazas (backend will return only user's plaza)
+          this.loadUserPlaza();
+        }
+      });
+    } else {
+      // No plazaId in user data, try to fetch (backend will return only user's plaza)
+      this.loadUserPlaza();
+    }
+  }
+
+  private loadUserPlaza(): void {
     this.plazaService.getPlazas().subscribe({
       next: (data: PlazaDto[]) => {
         this.plazas = data;
@@ -46,7 +69,11 @@ export class PlazaComponent implements OnInit {
           this.startEdit(this.plazas[0]);
         }
       },
-      error: (err: any) => console.error('Error cargando plazas', err)
+      error: (err: any) => {
+        console.error('Error cargando plazas', err);
+        // Don't show error to user if it's a 403 - they just don't have permission
+        // This is a single-plaza system, so if they can't see their plaza, something is wrong
+      }
     });
   }
 

@@ -59,7 +59,7 @@ public class UserController {
     }
     
     @GetMapping
-    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN') or hasRole('gerente')")
     public ResponseEntity<List<UserResponseDto>> getAllUsers(Authentication authentication) {
         User currentUser = (User) authentication.getPrincipal();
         List<User> users = userRepository.findByPlazaIdAndIsActiveTrue(currentUser.getPlaza().getId());
@@ -72,7 +72,7 @@ public class UserController {
     }
     
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN') or hasRole('gerente')")
     public ResponseEntity<UserResponseDto> getUserById(@PathVariable Long id, Authentication authentication) {
         User currentUser = (User) authentication.getPrincipal();
         
@@ -82,7 +82,7 @@ public class UserController {
     }
     
     @PostMapping
-    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN') or hasRole('gerente')")
     public ResponseEntity<UserResponseDto> createUser(@Valid @RequestBody UserRequestDto userRequest, 
                                                      Authentication authentication) {
         User currentUser = (User) authentication.getPrincipal();
@@ -188,7 +188,7 @@ public class UserController {
     }
     
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN') or hasRole('gerente')")
     public ResponseEntity<UserResponseDto> updateUser(@PathVariable Long id, 
                                                       @Valid @RequestBody UserRequestDto userRequest,
                                                       Authentication authentication) {
@@ -229,7 +229,7 @@ public class UserController {
     }
     
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN') or hasRole('gerente')")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id, Authentication authentication) {
         User currentUser = (User) authentication.getPrincipal();
         

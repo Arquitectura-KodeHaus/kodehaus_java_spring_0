@@ -41,7 +41,7 @@ public class RoleController {
     }
     
     @GetMapping
-    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN') or hasRole('gerente')")
     public ResponseEntity<List<RoleResponseDto>> getAllRoles() {
         List<Role> roles = roleRepository.findByIsActiveTrue();
         
@@ -53,7 +53,7 @@ public class RoleController {
     }
     
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN') or hasRole('gerente')")
     public ResponseEntity<RoleResponseDto> getRoleById(@PathVariable Long id) {
         return roleRepository.findById(id)
             .filter(role -> role.getIsActive())
@@ -62,7 +62,7 @@ public class RoleController {
     }
     
     @PostMapping
-    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN') or hasRole('gerente')")
     public ResponseEntity<RoleResponseDto> createRole(@Valid @RequestBody RoleRequestDto roleRequest) {
         // Check if role name already exists
         if (roleRepository.existsByName(roleRequest.getName())) {
@@ -84,7 +84,7 @@ public class RoleController {
     }
     
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN') or hasRole('gerente')")
     public ResponseEntity<RoleResponseDto> updateRole(@PathVariable Long id, 
                                                       @Valid @RequestBody RoleRequestDto roleRequest) {
         return roleRepository.findById(id)
@@ -111,7 +111,7 @@ public class RoleController {
     }
     
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN') or hasRole('gerente')")
     public ResponseEntity<Void> deleteRole(@PathVariable Long id) {
         return roleRepository.findById(id)
             .filter(role -> role.getIsActive())

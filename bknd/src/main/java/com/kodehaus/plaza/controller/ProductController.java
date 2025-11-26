@@ -47,7 +47,7 @@ public class ProductController {
     }
     
     @GetMapping
-    @PreAuthorize("hasAnyRole('MANAGER', 'EMPLOYEE_GENERAL', 'EMPLOYEE_SECURITY', 'EMPLOYEE_PARKING')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'gerente', 'EMPLOYEE_GENERAL', 'EMPLOYEE_SECURITY', 'EMPLOYEE_PARKING')")
     public ResponseEntity<List<ProductResponseDto>> getAllProducts(Authentication authentication) {
         String username = authentication.getName();
         User currentUser = (User) userDetailsService.loadUserByUsername(username);
@@ -61,7 +61,7 @@ public class ProductController {
     }
     
     @GetMapping("/available")
-    @PreAuthorize("hasAnyRole('MANAGER', 'EMPLOYEE_GENERAL', 'EMPLOYEE_SECURITY', 'EMPLOYEE_PARKING')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'gerente', 'EMPLOYEE_GENERAL', 'EMPLOYEE_SECURITY', 'EMPLOYEE_PARKING')")
     public ResponseEntity<List<ProductResponseDto>> getAvailableProducts(Authentication authentication) {
         String username = authentication.getName();
         User currentUser = (User) userDetailsService.loadUserByUsername(username);
@@ -75,7 +75,7 @@ public class ProductController {
     }
     
     @GetMapping("/categories")
-    @PreAuthorize("hasAnyRole('MANAGER', 'EMPLOYEE_GENERAL', 'EMPLOYEE_SECURITY', 'EMPLOYEE_PARKING')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'gerente', 'EMPLOYEE_GENERAL', 'EMPLOYEE_SECURITY', 'EMPLOYEE_PARKING')")
     public ResponseEntity<List<String>> getCategories(Authentication authentication) {
         String username = authentication.getName();
         User currentUser = (User) userDetailsService.loadUserByUsername(username);
@@ -85,7 +85,7 @@ public class ProductController {
     }
     
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('MANAGER', 'EMPLOYEE_GENERAL', 'EMPLOYEE_SECURITY', 'EMPLOYEE_PARKING')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'gerente', 'EMPLOYEE_GENERAL', 'EMPLOYEE_SECURITY', 'EMPLOYEE_PARKING')")
     public ResponseEntity<ProductResponseDto> getProductById(@PathVariable Long id, Authentication authentication) {
         String username = authentication.getName();
         User currentUser = (User) userDetailsService.loadUserByUsername(username);
@@ -96,7 +96,7 @@ public class ProductController {
     }
     
     @PostMapping
-    @PreAuthorize("hasRole('MANAGER')")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('gerente')")
     public ResponseEntity<ProductResponseDto> createProduct(@Valid @RequestBody ProductRequestDto productRequest, 
                                                           Authentication authentication) {
         String username = authentication.getName();
@@ -122,7 +122,7 @@ public class ProductController {
     }
     
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('MANAGER')")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('gerente')")
     public ResponseEntity<ProductResponseDto> updateProduct(@PathVariable Long id, 
                                                           @Valid @RequestBody ProductRequestDto productRequest,
                                                           Authentication authentication) {
@@ -145,7 +145,7 @@ public class ProductController {
     }
     
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('MANAGER')")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('gerente')")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id, Authentication authentication) {
         String username = authentication.getName();
         User currentUser = (User) userDetailsService.loadUserByUsername(username);
@@ -160,7 +160,7 @@ public class ProductController {
     }
     
     @PutMapping("/{id}/price")
-    @PreAuthorize("hasRole('MANAGER')")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('gerente')")
     public ResponseEntity<ProductResponseDto> updateProductPrice(@PathVariable Long id, 
                                                                @RequestBody ProductRequestDto priceRequest,
                                                                Authentication authentication) {

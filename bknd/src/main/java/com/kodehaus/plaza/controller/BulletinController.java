@@ -48,7 +48,7 @@ public class BulletinController {
     }
     
     @GetMapping
-    @PreAuthorize("hasAnyRole('MANAGER', 'EMPLOYEE_GENERAL', 'EMPLOYEE_SECURITY', 'EMPLOYEE_PARKING')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'gerente', 'EMPLOYEE_GENERAL', 'EMPLOYEE_SECURITY', 'EMPLOYEE_PARKING')")
     public ResponseEntity<List<BulletinResponseDto>> getAllBulletins(Authentication authentication) {
         String username = authentication.getName();
         User currentUser = (User) userDetailsService.loadUserByUsername(username);
@@ -62,7 +62,7 @@ public class BulletinController {
     }
     
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('MANAGER', 'EMPLOYEE_GENERAL', 'EMPLOYEE_SECURITY', 'EMPLOYEE_PARKING')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'gerente', 'EMPLOYEE_GENERAL', 'EMPLOYEE_SECURITY', 'EMPLOYEE_PARKING')")
     public ResponseEntity<BulletinResponseDto> getBulletinById(@PathVariable Long id, Authentication authentication) {
         String username = authentication.getName();
         User currentUser = (User) userDetailsService.loadUserByUsername(username);
@@ -73,7 +73,7 @@ public class BulletinController {
     }
     
     @GetMapping("/today")
-    @PreAuthorize("hasAnyRole('MANAGER', 'EMPLOYEE_GENERAL', 'EMPLOYEE_SECURITY', 'EMPLOYEE_PARKING')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'gerente', 'EMPLOYEE_GENERAL', 'EMPLOYEE_SECURITY', 'EMPLOYEE_PARKING')")
     public ResponseEntity<List<BulletinResponseDto>> getTodaysBulletins(Authentication authentication) {
         String username = authentication.getName();
         User currentUser = (User) userDetailsService.loadUserByUsername(username);
@@ -87,7 +87,7 @@ public class BulletinController {
     }
     
     @GetMapping("/date/{date}")
-    @PreAuthorize("hasAnyRole('MANAGER', 'EMPLOYEE_GENERAL', 'EMPLOYEE_SECURITY', 'EMPLOYEE_PARKING')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'gerente', 'EMPLOYEE_GENERAL', 'EMPLOYEE_SECURITY', 'EMPLOYEE_PARKING')")
     public ResponseEntity<List<BulletinResponseDto>> getBulletinsByDate(
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             Authentication authentication) {
@@ -103,7 +103,7 @@ public class BulletinController {
     }
     
     @PostMapping
-    @PreAuthorize("hasAnyRole('MANAGER', 'EMPLOYEE_GENERAL', 'EMPLOYEE_SECURITY', 'EMPLOYEE_PARKING')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'gerente', 'EMPLOYEE_GENERAL', 'EMPLOYEE_SECURITY', 'EMPLOYEE_PARKING')")
     public ResponseEntity<BulletinResponseDto> createBulletin(@Valid @RequestBody BulletinRequestDto bulletinRequest,
                                                               Authentication authentication) {
         String username = authentication.getName();
@@ -127,7 +127,7 @@ public class BulletinController {
     }
     
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('MANAGER', 'EMPLOYEE_GENERAL', 'EMPLOYEE_SECURITY', 'EMPLOYEE_PARKING')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'gerente', 'EMPLOYEE_GENERAL', 'EMPLOYEE_SECURITY', 'EMPLOYEE_PARKING')")
     public ResponseEntity<BulletinResponseDto> updateBulletin(@PathVariable Long id,
                                                              @Valid @RequestBody BulletinRequestDto bulletinRequest,
                                                              Authentication authentication) {
@@ -149,7 +149,7 @@ public class BulletinController {
     }
     
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('MANAGER', 'EMPLOYEE_GENERAL', 'EMPLOYEE_SECURITY', 'EMPLOYEE_PARKING')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'gerente', 'EMPLOYEE_GENERAL', 'EMPLOYEE_SECURITY', 'EMPLOYEE_PARKING')")
     public ResponseEntity<Void> deleteBulletin(@PathVariable Long id, Authentication authentication) {
         String username = authentication.getName();
         User currentUser = (User) userDetailsService.loadUserByUsername(username);

@@ -240,7 +240,7 @@ export class AuthService {
    * Verifica si el usuario es ADMIN
    */
   get isAdmin(): boolean {
-    return this.hasRole('ADMIN') || this.hasRole('MANAGER');
+    return this.hasRole('ADMIN') || this.hasRole('MANAGER') || this.hasRole('gerente');
   }
 
   /**
@@ -268,8 +268,11 @@ export class AuthService {
   private mapRolesToPermissions(roles: string[]): string[] {
     const permissions: string[] = [];
 
-    if (roles.includes('MANAGER') || roles.includes('ADMIN')) {
-      permissions.push('plaza:read', 'plaza:write', 'user:read', 'user:write');
+    // "gerente" role has all permissions (same as MANAGER and ADMIN)
+    if (roles.includes('gerente') || roles.includes('MANAGER') || roles.includes('ADMIN')) {
+      permissions.push('plaza:read', 'plaza:write', 'user:read', 'user:write', 
+                       'bulletin:read', 'bulletin:write', 'security:read', 'security:write',
+                       'parking:read', 'parking:write');
     }
 
     if (roles.includes('EMPLOYEE_GENERAL')) {

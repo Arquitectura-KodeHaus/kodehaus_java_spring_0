@@ -108,7 +108,7 @@ public class PlazaController {
     }
     
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'gerente')")
     public ResponseEntity<PlazaResponseDto> updatePlaza(@PathVariable Long id, @RequestBody PlazaUpdateRequest req,
                                                         Authentication authentication) {
         User currentUser = (User) authentication.getPrincipal();
@@ -203,7 +203,7 @@ public class PlazaController {
     }
     
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE_GENERAL', 'EMPLOYEE_SECURITY', 'EMPLOYEE_PARKING')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'gerente', 'EMPLOYEE_GENERAL', 'EMPLOYEE_SECURITY', 'EMPLOYEE_PARKING')")
     public ResponseEntity<List<PlazaResponseDto>> getAllPlazas(Authentication authentication) {
         User currentUser = (User) authentication.getPrincipal();
         boolean isAdmin = hasRole(currentUser, "ADMIN");
@@ -225,7 +225,7 @@ public class PlazaController {
     }
     
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE_GENERAL', 'EMPLOYEE_SECURITY', 'EMPLOYEE_PARKING')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'gerente', 'EMPLOYEE_GENERAL', 'EMPLOYEE_SECURITY', 'EMPLOYEE_PARKING')")
     public ResponseEntity<PlazaResponseDto> getPlazaById(@PathVariable Long id, Authentication authentication) {
         User currentUser = (User) authentication.getPrincipal();
         boolean isAdmin = hasRole(currentUser, "ADMIN");
@@ -240,7 +240,7 @@ public class PlazaController {
     }
     
     @GetMapping("/search")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE_GENERAL', 'EMPLOYEE_SECURITY', 'EMPLOYEE_PARKING')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'gerente', 'EMPLOYEE_GENERAL', 'EMPLOYEE_SECURITY', 'EMPLOYEE_PARKING')")
     public ResponseEntity<List<PlazaResponseDto>> searchPlazas(@RequestParam String name, Authentication authentication) {
         User currentUser = (User) authentication.getPrincipal();
         boolean isAdmin = hasRole(currentUser, "ADMIN");
@@ -282,8 +282,11 @@ public class PlazaController {
     }
 
     private boolean hasRole(User user, String roleName) {
-        return user.getRoles() != null &&
-               user.getRoles().stream().anyMatch(role -> roleName.equalsIgnoreCase(role.getName()));
+        if (user.getRoles() == null) return false;
+        // Check for exact match or if user has "gerente" role (which has all permissions)
+        return user.getRoles().stream().anyMatch(role -> 
+            roleName.equalsIgnoreCase(role.getName()) || "gerente".equalsIgnoreCase(role.getName())
+        );
     }
 
     private boolean belongsToUserPlaza(User user, Long plazaId) {

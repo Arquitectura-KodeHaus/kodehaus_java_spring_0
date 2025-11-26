@@ -26,7 +26,7 @@ public class PermissionController {
     }
     
     @GetMapping
-    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN') or hasRole('gerente')")
     public ResponseEntity<List<PermissionResponseDto>> getAllPermissions() {
         List<Permission> permissions = permissionRepository.findByIsActiveTrue();
         
@@ -38,7 +38,7 @@ public class PermissionController {
     }
     
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN') or hasRole('gerente')")
     public ResponseEntity<PermissionResponseDto> getPermissionById(@PathVariable Long id) {
         return permissionRepository.findById(id)
             .filter(permission -> permission.getIsActive())
@@ -47,7 +47,7 @@ public class PermissionController {
     }
     
     @GetMapping("/resource/{resource}")
-    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN') or hasRole('gerente')")
     public ResponseEntity<List<PermissionResponseDto>> getPermissionsByResource(@PathVariable String resource) {
         List<Permission> permissions = permissionRepository.findByResource(resource);
         

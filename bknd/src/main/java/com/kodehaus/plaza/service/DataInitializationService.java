@@ -113,19 +113,28 @@ public class DataInitializationService implements CommandLineRunner {
         if (roleRepository.count() == 0) {
             System.out.println("Creating roles...");
             
+            // Get all permissions for roles that need full access
+            Set<Permission> allPermissions = new HashSet<>(permissionRepository.findByIsActiveTrue());
+            
+            // Gerente role with all permissions (primary role for plaza managers)
+            Role gerenteRole = new Role();
+            gerenteRole.setName("gerente");
+            gerenteRole.setDescription("Gerente de plaza con acceso completo");
+            gerenteRole.setPermissions(allPermissions);
+            roleRepository.save(gerenteRole);
+            
             // Manager role with all permissions
             Role managerRole = new Role();
             managerRole.setName("MANAGER");
             managerRole.setDescription("Plaza Manager with full access");
-            Set<Permission> managerPermissions = new HashSet<>(permissionRepository.findByIsActiveTrue());
-            managerRole.setPermissions(managerPermissions);
+            managerRole.setPermissions(allPermissions);
             roleRepository.save(managerRole);
 
             // Administrator role (global access)
             Role adminRole = new Role();
             adminRole.setName("ADMIN");
             adminRole.setDescription("Administrador con acceso global");
-            adminRole.setPermissions(new HashSet<>(permissionRepository.findByIsActiveTrue()));
+            adminRole.setPermissions(allPermissions);
             roleRepository.save(adminRole);
             
             // Employee Security role
