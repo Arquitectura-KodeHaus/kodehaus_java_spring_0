@@ -41,7 +41,9 @@ public class ModuleController {
             if (authentication == null || authentication.getPrincipal() == null) {
                 // No authentication, try to get all modules anyway
                 log.info("No authentication, getting all modules");
-                return externalSystemService.getPlazaModules(null);
+                ResponseEntity<List<Map<String, Object>>> externalResponse = externalSystemService.getPlazaModules(null);
+                // Extract body and create clean response to avoid 502 errors
+                return ResponseEntity.ok(externalResponse.getBody());
             }
 
             User currentUser = (User) authentication.getPrincipal();
@@ -54,10 +56,18 @@ public class ModuleController {
                     ? plaza.getExternalId()
                     : null;
             log.info("Plaza externalId from DB: {}", externalId);
-            return externalSystemService.getPlazaModules(externalId);
+            
+            ResponseEntity<List<Map<String, Object>>> externalResponse = externalSystemService.getPlazaModules(externalId);
+            // Extract body and create clean response to avoid 502 errors
+            List<Map<String, Object>> modules = externalResponse.getBody();
+            if (modules == null) {
+                log.warn("External service returned null body, returning empty list");
+                return ResponseEntity.ok(List.of());
+            }
+            log.info("Returning {} modules to client", modules.size());
+            return ResponseEntity.ok(modules);
         } catch (Exception e) {
-            System.err.println("Error in ModuleController.getModules: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Error in ModuleController.getModules: {}", e.getMessage(), e);
             // Log error but return empty list to avoid breaking the frontend
             return ResponseEntity.ok(List.of());
         }
@@ -69,6 +79,19 @@ public class ModuleController {
     @GetMapping("/plaza/{plazaExternalId}")
     @PermitAll
     public ResponseEntity<List<Map<String, Object>>> getModulesByPlazaExternalId(@PathVariable String plazaExternalId) {
-        return externalSystemService.getPlazaModules(plazaExternalId);
+        try {
+            ResponseEntity<List<Map<String, Object>>> externalResponse = externalSystemService.getPlazaModules(plazaExternalId);
+            // Extract body and create clean response to avoid 502 errors
+            List<Map<String, Object>> modules = externalResponse.getBody();
+            if (modules == null) {
+                log.warn("External service returned null body for plazaExternalId: {}, returning empty list", plazaExternalId);
+                return ResponseEntity.ok(List.of());
+            }
+            log.info("Returning {} modules for plazaExternalId: {}", modules.size(), plazaExternalId);
+            return ResponseEntity.ok(modules);
+        } catch (Exception e) {
+            log.error("Error in ModuleController.getModulesByPlazaExternalId: {}", e.getMessage(), e);
+            return ResponseEntity.ok(List.of());
+        }
     }
 }
